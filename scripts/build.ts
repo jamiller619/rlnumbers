@@ -1,46 +1,21 @@
 import chalk from 'chalk'
-import esbuild from 'esbuild'
-import fs from 'node:fs/promises'
-import pkgJSON from '../package.json'
+import { build } from 'vite'
 
-// This file is output to .scripts/scripts/build.js by tsc.
-// The additional level of nesting is a result of also
-// having the main package.json within the
-// tsconfig.scripts.json project.
-//* Only use "root" with "new URL()" */
-const root = (p: string) => `'../..'/${p}`
+console.log(`\n\nBuilding: ${chalk.bold.blueBright('Preload')}\n`)
+await build({
+  configFile: 'src/preload/vite.config.ts',
+})
 
-const copyPackageJSON = async () => {
-  // Remove the scripts and devDependencies sections from
-  // dist version of the package.json
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { scripts, devDependencies, ...json } = pkgJSON
+console.log(`\n\nBuilding: ${chalk.bold.blueBright('Main')}\n`)
+await build({
+  configFile: 'src/main/vite.config.ts',
+})
 
-  await fs.writeFile('dist/package.json', JSON.stringify(json, null, 2))
-}
+console.log(`\n\nBuilding: ${chalk.bold.blueBright('Renderer')}\n`)
+await build({
+  configFile: 'src/renderer/vite.config.ts',
+})
 
-const build = {
-  cli: async () => {
-    try {
-      await esbuild.build({
-        entryPoints: ['src/cli/index.ts'],
-        outfile: 'dist/cli.js',
-        bundle: true,
-        platform: 'node',
-        format: 'esm',
-        target: 'node16',
-        external: Object.keys(pkgJSON.dependencies),
-      })
+console.log(`\n${chalk.bold.greenBright('Build Complete!')}\n`)
 
-      await copyPackageJSON()
-
-      const result = new URL(root('dist/cli.js'), import.meta.url)
-
-      console.log(chalk.green(`cli build complete: ${result.href}`))
-    } catch (err) {
-      console.error(err)
-    }
-  },
-}
-
-build.cli().catch(console.error)
+process.exit(0)

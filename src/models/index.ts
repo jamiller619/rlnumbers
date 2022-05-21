@@ -1,5 +1,0 @@
-export { default as Base } from './Base'
-export * from './Map'
-export { default as Map } from './Map'
-export * from './Platform'
-export { default as Platform } from './Platform'

@@ -1,0 +1,45 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./rlnumbers.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Replay {
+  id          Int       @id @default(autoincrement())
+  createDate  DateTime
+  path        String    @unique
+  name        String
+  hash        String    @unique
+  matchDate   DateTime?
+  matchType   String?
+  matchLength Int?
+  map         Int?
+  playerStats Stats[]
+}
+
+model Player {
+  id       Int     @id @default(autoincrement())
+  onlineId String? @unique
+  platform Int?
+  name     String
+  aka      String?
+  stats    Stats[]
+}
+
+model Stats {
+  id       Int    @id @default(autoincrement())
+  player   Player @relation(fields: [playerId], references: [id])
+  playerId Int
+  replay   Replay @relation(fields: [replayId], references: [id])
+  replayId Int
+  assists  Int?
+  demos    Int?
+  goals    Int?
+  saves    Int?
+  score    Int?
+  shots    Int?
+  team     Int?
+}

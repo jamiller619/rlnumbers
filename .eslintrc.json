@@ -1,13 +1,18 @@
 {
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": 2021,
+    "ecmaVersion": "latest",
     "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    },
     "project": ["./tsconfig.json"]
   },
   "plugins": ["@typescript-eslint", "prettier"],
   "extends": [
     "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended"
   ],
@@ -25,6 +30,9 @@
         "varsIgnorePattern": "_",
         "argsIgnorePattern": "_"
       }
-    ]
+    ],
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "off",
+    "react/jsx-uses-react": "off"
   }
 }
