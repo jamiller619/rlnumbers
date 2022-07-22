@@ -8,7 +8,8 @@
     "skipLibCheck": true,
     "moduleResolution": "Node",
     "resolveJsonModule": true,
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "noErrorTruncation": true
   },
-  "exclude": ["node_modules", "src.old"]
+  "exclude": ["node_modules"]
 }

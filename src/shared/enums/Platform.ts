@@ -1,10 +1,9 @@
 enum Platform {
-  UNKNOWN = 0,
-  STEAM,
-  EPIC,
-  XBOX,
-  PSN,
-  SWITCH,
+  STEAM = 1,
+  EPIC = 2,
+  XBOX = 3,
+  PSN = 4,
+  SWITCH = 5,
 }
 
 export default Platform

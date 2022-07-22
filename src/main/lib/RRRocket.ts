@@ -3,6 +3,12 @@ export type Platform = {
   value: string
 }
 
+export type DebugInfo = {
+  frame: number
+  user: string
+  text: string
+}
+
 export type PlayerStats = {
   Assists: number
   bBot: boolean
@@ -74,6 +80,7 @@ export type Replay = {
   header_crc: number
   header_size: number
   keyframes: Keyframe[]
+  debug_info: DebugInfo[]
   levels: string[]
   major_version: number
   minor_version: number

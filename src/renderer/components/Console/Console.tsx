@@ -6,6 +6,17 @@ import { ITerminalOptions } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import { XTerm } from 'xterm-for-react'
 import Xterm from 'xterm-for-react/dist/src/XTerm'
+import LoadingBar from './LoadingBar'
+
+type ConsoleProps = HTMLAttributes<HTMLDivElement> & {
+  onSizeChange: (size: string) => void
+}
+
+const timeStampFormatter = new Intl.DateTimeFormat('en-US', {
+  hour: 'numeric',
+  minute: 'numeric',
+  second: 'numeric',
+})
 
 const termStyle = {
   fontFamily: '"SF Mono", monospace',
@@ -35,12 +46,63 @@ const logEvents = {
   error: 'log:error',
 }
 
-export default function Console(
-  props: HTMLAttributes<HTMLDivElement>
-): JSX.Element {
+const LoadingBarContainer = styled.div`
+  position: relative;
+  top: -10px;
+  height: 1rem;
+  /* margin-bottom: -0.5rem; */
+  font-size: small;
+  font-family: '"SF Mono", monospace';
+  width: 98%;
+
+  > * {
+    position: absolute;
+    inset: 0;
+  }
+`
+
+const Container = styled.div<{ $bg: string }>`
+  background: ${({ $bg }) => $bg};
+`
+
+const XTermComponent = styled(XTerm)`
+  padding: 1rem 0.5rem 1rem 1rem;
+`
+
+const timer: NodeJS.Timeout | null = null
+
+export default function Console({
+  onSizeChange,
+  ...props
+}: ConsoleProps): JSX.Element {
   const ref = useRef<Xterm | null>(null)
   const addonFit = useMemo(() => new FitAddon(), [])
   const background = Color(useTheme().colors.surface).lighten(0.2).hex()
+  // const [throughput, tickThroughput] = useThroughput(2000)
+  const size = useRef('20%')
+
+  // useEffect(() => {
+  //   if (throughput >= 5) {
+  //     if (size.current !== '40%') {
+  //       size.current = '40%'
+
+  //       onSizeChange(size.current)
+  //     }
+
+  //     if (timer != null) {
+  //       clearTimeout(timer)
+  //     }
+
+  //     setTimeout(() => {
+  //       if (throughput === 0) {
+  //         if (size.current !== '20%') {
+  //           size.current = '20%'
+  //           onSizeChange(size.current)
+  //         }
+  //       }
+  //     }, 5000)
+  //   }
+  // }, [onSizeChange])
 
   const termOptions: ITerminalOptions = useMemo(
     () => ({
@@ -50,7 +112,7 @@ export default function Console(
       fontFamily: termStyle.fontFamily,
       cursorBlink: false,
       customGlyphs: true,
-      rendererType: 'dom',
+      // rendererType: 'dom',
       theme: {
         background,
         white: '#919191',
@@ -121,22 +183,10 @@ export default function Console(
 
   return (
     <Container {...props} $bg={background}>
-      <XTerm ref={ref} options={termOptions} addons={[addonFit]} />
+      <LoadingBarContainer>
+        <LoadingBar />
+      </LoadingBarContainer>
+      <XTermComponent ref={ref} options={termOptions} addons={[addonFit]} />
     </Container>
   )
 }
-
-const Container = styled.div<{ $bg: string }>`
-  padding: 1rem 0 0 1rem;
-  background: ${({ $bg }) => $bg};
-
-  > div {
-    height: 100%;
-  }
-`
-
-const timeStampFormatter = new Intl.DateTimeFormat('en-US', {
-  hour: 'numeric',
-  minute: 'numeric',
-  second: 'numeric',
-})

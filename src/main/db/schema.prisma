@@ -7,34 +7,41 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator dbms {
+  provider = "prisma-dbml-generator"
+}
+
 model Replay {
   id          Int       @id @default(autoincrement())
-  createDate  DateTime
-  path        String    @unique
+  createdAt   DateTime
+  path        String?   @unique
   name        String
   hash        String    @unique
   matchDate   DateTime?
-  matchType   String?
   matchLength Int?
-  map         Int?
-  playerStats Stats[]
+  map         String?
+  playlist    Int?
+  ranked      Boolean?
+  season      Int? // 1-14 = old seasons, 15+ = free-to-play seasons
+  stats       Stats[]
+
+  @@map("replays")
 }
 
 model Player {
-  id       Int     @id @default(autoincrement())
-  onlineId String? @unique
-  platform Int?
-  name     String
-  aka      String?
-  stats    Stats[]
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime
+  onlineId  String?  @unique
+  platform  Int?
+  name      String
+  aka       String? // String array
+  stats     Stats[]
+
+  @@map("players")
 }
 
 model Stats {
   id       Int    @id @default(autoincrement())
-  player   Player @relation(fields: [playerId], references: [id])
-  playerId Int
-  replay   Replay @relation(fields: [replayId], references: [id])
-  replayId Int
   assists  Int?
   demos    Int?
   goals    Int?
@@ -42,4 +49,11 @@ model Stats {
   score    Int?
   shots    Int?
   team     Int?
+  mmr      Int?
+  player   Player @relation(fields: [playerId], references: [id])
+  playerId Int
+  replay   Replay @relation(fields: [replayId], references: [id])
+  replayId Int
+
+  @@map("stats")
 }

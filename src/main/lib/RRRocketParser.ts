@@ -1,10 +1,11 @@
-import { exec as cp_exec } from 'node:child_process'
+import { exec as execSync } from 'node:child_process'
 import path from 'node:path'
 import process from 'node:process'
 import { promisify } from 'node:util'
+import jq from 'node-jq'
 import * as RRRocket from './RRRocket'
 
-const exec = promisify(cp_exec)
+const exec = promisify(execSync)
 const { RRROCKET_VERSION } = process.env
 
 const bins = {
@@ -26,7 +27,11 @@ const getBin = () => {
   }
 }
 
-const isWindows = process.platform === 'win32'
+const batch = function* <T>(items: T[], size: number) {
+  for (let i = 0; i < items.length; i += size) {
+    yield items.slice(i, i + size)
+  }
+}
 
 export default class RRRocketParser {
   exe: string
@@ -39,24 +44,39 @@ export default class RRRocketParser {
 
     this.exe = path.resolve(
       __dirname,
-      '../src/main/bin',
-      `rrrocket-v${RRROCKET_VERSION}`,
+      '../src/main/bin/rrrocket',
+      RRROCKET_VERSION,
       bin
     )
   }
 
-  async parseReplay(filePath: string) {
-    const file = isWindows
-      ? filePath.split(path.sep).join(path.posix.sep)
-      : filePath
+  async *parseReplays(...files: string[]) {
+    const batches = batch(files, 20)
 
-    const cmd = `${this.exe} -j "${file}"`
-    const { stdout, stderr } = await exec(cmd, this.opts)
+    for await (const batch of batches) {
+      const cmd = `${this.exe} -j -m "${batch.join('" "')}"`
+      const { stdout, stderr } = await exec(cmd, this.opts)
 
-    if (stderr) {
-      throw stderr
+      if (stderr) {
+        throw stderr
+      } else {
+        const result = (await jq.run('.', stdout, {
+          input: 'string',
+          output: 'compact',
+        })) as string
+
+        yield result.split('\r\n').map((data) => {
+          const parsed = JSON.parse(data) as {
+            file: string
+            replay: RRRocket.Replay
+          }
+
+          return {
+            file: parsed.file,
+            data: parsed.replay,
+          }
+        })
+      }
     }
-
-    return JSON.parse(stdout.toString()) as RRRocket.Replay
   }
 }

@@ -1,18 +1,12 @@
-import {
-  Player as PlayerSchema,
-  Replay as ReplaySchema,
-  Stats,
-} from '@prisma/client'
-import Player from './Player'
+import { Replay as ReplayEntity } from '@prisma/client'
+import Stats, { StatsDTO } from './Stats'
 
-type Replay = Omit<ReplaySchema, 'id'> & {
-  players: Player[]
+type Replay = Readonly<ReplayEntity> & {
+  readonly stats: Stats[]
 }
 
 export default Replay
 
-export type ReplayEntity = ReplaySchema & {
-  playerStats: (Stats & {
-    player: PlayerSchema
-  })[]
+export type ReplayDTO = Omit<Replay, 'id' | 'createdAt' | 'stats'> & {
+  readonly stats: StatsDTO[]
 }

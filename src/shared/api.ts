@@ -1,14 +1,13 @@
+import { Player } from '@prisma/client'
 import { ipcRenderer } from 'electron'
-import { Config, Replay } from './types'
+import { Config, ConfigKey, ConfigValue, Paged, Replay } from './types'
 
 const { invoke } = ipcRenderer
 
 const api = {
-  on: <T = never>(
-    event: string,
-    listener: (event: unknown, ...args: T[]) => void
-  ) => {
-    ipcRenderer.addListener(event, listener)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  on: (event: string, listener: (event: unknown, ...args: any[]) => void) => {
+    ipcRenderer.on(event, listener)
   },
 
   off: <T = never>(
@@ -19,8 +18,8 @@ const api = {
   },
 
   config: {
-    get: (): Promise<Config> => invoke('config:get'),
-    set: (key: keyof Config, value: unknown): Promise<Config> => {
+    get: (key?: ConfigKey) => invoke('config:get', key),
+    set: (key: ConfigKey, value: ConfigValue): Promise<Config> => {
       return invoke('config:set', key, value)
     },
   },
@@ -30,9 +29,18 @@ const api = {
   },
 
   replays: {
-    import: (dir: string): Promise<void> => invoke('replays:import', dir),
-    get: (page?: number, take?: number): Promise<Replay[]> => {
+    get: (page?: number, take?: number): Promise<Paged<Replay>> => {
       return invoke('replays:get', page, take)
+    },
+  },
+
+  players: {
+    claim: (playerName: string) => invoke('players:claim', playerName),
+    getClaimed: (): Promise<Omit<Player, 'stats'>[]> => {
+      return invoke('players:getClaimed')
+    },
+    getAll: (): Promise<Player[]> => {
+      return invoke('players:getAll')
     },
   },
 } as const

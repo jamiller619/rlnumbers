@@ -24,5 +24,7 @@ bin
 !.vscode/launch.json
 !.vscode/extensions.json
 
-src.old
+# Database stuff
 *.db
+*.db-journal
+dbml

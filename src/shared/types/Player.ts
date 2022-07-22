@@ -1,9 +1,7 @@
-import { Player as PlayerSchema, Stats } from '@prisma/client'
+import { Player as PlayerEntity } from '@prisma/client'
 
-export type PlayerStats = Omit<Stats, 'id' | 'playerId' | 'replayId'>
-
-type Player = Omit<PlayerSchema, 'id'> & {
-  stats: PlayerStats
-}
+type Player = Readonly<PlayerEntity>
 
 export default Player
+
+export type PlayerDTO = Omit<Player, 'id' | 'createdAt'>

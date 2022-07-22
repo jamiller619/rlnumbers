@@ -1,2 +1,4 @@
-export { default as Header } from './Header/Header'
-export { default as Console } from './Console/Console'
+// export { default as Console } from './console/Console'
+export { default as Menu } from './menu/Menu'
+export { default as Header } from './Header'
+export * from './Typography'
