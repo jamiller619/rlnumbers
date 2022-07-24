@@ -57,3 +57,11 @@ model Stats {
 
   @@map("stats")
 }
+
+model UnknownValue {
+  id    Int    @id @default(autoincrement())
+  type  String
+  value String
+
+  @@map("unknown_values")
+}

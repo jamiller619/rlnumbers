@@ -1,11 +1,9 @@
 import { UserConfig } from 'vite'
-import shared from '../../vite.config.shared'
+import merge from '../../vite.config.shared'
 
 const config: UserConfig = {
-  ...shared,
   root: __dirname,
   build: {
-    ...shared.build,
     lib: {
       entry: 'index.ts',
       formats: ['cjs'],
@@ -14,4 +12,4 @@ const config: UserConfig = {
   },
 }
 
-export default config
+export default merge(config)

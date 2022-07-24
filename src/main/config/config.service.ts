@@ -4,9 +4,10 @@ import process from 'node:process'
 import { Config, ConfigKey, ConfigValue, defaultConfig } from '@shared/config'
 import logger from '~/utils/logger'
 
-const { ROOT } = process.env
+const { CONFIG_DIR } = process.env
 
-const filePath = path.resolve(ROOT, 'config.json')
+const filePath = path.resolve('./dist/config.json')
+
 let config: Config | null = null
 
 const writeToFile = async (data: Config) => {

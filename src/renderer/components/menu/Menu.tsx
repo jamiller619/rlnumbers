@@ -77,7 +77,7 @@ export default function Menu(props: HTMLAttributes<HTMLElement>): JSX.Element {
         <NavLink to="/">
           <VscHome />
         </NavLink>
-        <NavLink to="/game">
+        <NavLink to="/match">
           <VscRocket />
         </NavLink>
       </Nav>

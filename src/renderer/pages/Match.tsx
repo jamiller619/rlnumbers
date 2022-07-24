@@ -1,7 +1,5 @@
-export default function Game(): JSX.Element {
-  return (
-    <div>
-      <h1>Game</h1>
-    </div>
-  )
+import Page from '~/components/Page'
+
+export default function Match(): JSX.Element {
+  return <Page title="Match">Match</Page>
 }

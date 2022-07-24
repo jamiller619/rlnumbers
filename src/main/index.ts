@@ -2,24 +2,31 @@ import path from 'node:path'
 import process from 'node:process'
 import { BrowserWindow, app, dialog, ipcMain } from 'electron'
 import { Config, ConfigKey, ConfigValue } from '@shared/config'
-import { Progress, Replay } from '@shared/types'
+import { Progress, Replay, ReplayEntity, Sort } from '@shared/types'
 import wait from '@shared/utils/wait'
 import logger from '~/utils/logger'
 import * as configService from './config/config.service'
+import * as intlService from './intl/intl.service'
 import * as replayService from './replays/replay.service'
 import * as replayWatcher from './replays/replay.watcher'
 
 const isDev = process.env.NODE_ENV === 'development'
+
+logger.info('main', `Starting main process in ${isDev ? 'DEV' : 'PROD'} mode`)
 
 let mainWindow: BrowserWindow | null = null
 
 const initApp = async () => {
   const config = await configService.getConfig()
 
-  replayWatcher.watch(...config.dirs)
+  if (config.dirs.length === 0) {
+    logger.info('main', 'No replay directories configured.')
+  } else {
+    replayWatcher.watch(...config.dirs)
+  }
 }
 
-const createWindow = async () => {
+const createWindow = () => {
   logger.info('main', 'Main window created')
 
   mainWindow =
@@ -49,15 +56,13 @@ const createWindow = async () => {
   mainWindow.once('ready-to-show', async () => {
     mainWindow?.show()
 
-    await wait(3)
-
     await initApp()
   })
 
   if (isDev) {
-    mainWindow.loadURL('http://localhost:3000')
+    mainWindow.loadURL(`http://localhost:${process.env.DEV_SERVER_PORT}`)
 
-    mainWindow?.webContents.openDevTools()
+    wait(1).then(() => mainWindow?.webContents.openDevTools())
   } else {
     mainWindow.loadFile(path.join(__dirname, 'index.html'))
   }
@@ -80,32 +85,23 @@ const createWindow = async () => {
     return configService?.set(key, value)
   })
 
-  ipcMain.handle('replays:get', (_, page?: number, take?: number) => {
-    return replayService.getReplays(page, take)
+  ipcMain.handle(
+    'replays:get',
+    (_, page?: number, take?: number, sort?: Sort<ReplayEntity>) => {
+      return replayService.getReplays(page, take, sort)
+    }
+  )
+
+  ipcMain.handle('intl:get', () => {
+    return intlService.getIntl()
   })
-
-  // ipcMain.handle('replays:forceScan', () => {
-  //   return replayService.forceScan()
-  // })
-
-  // ipcMain.handle('replays:list', (_, page?: number, take?: number) => {
-  //   return replayService.list(page, take)
-  // })
-
-  // ipcMain.handle('players:claim', (_, name: string) => {
-  //   return PlayerService.claim(name)
-  // })
-
-  // ipcMain.handle('players:getClaimed', () => {
-  //   return PlayerService.getClaimed()
-  // })
-
-  // ipcMain.handle('players:getAll', () => {
-  //   return PlayerService.getAllPlayers()
-  // })
 
   replayService.on('replay:imported', (replay: Replay) => {
     mainWindow?.webContents.send('replay:imported', replay)
+  })
+
+  replayService.on('replay:deleted', (id: number) => {
+    mainWindow?.webContents.send('replay:deleted', id)
   })
 
   replayService.on('import:start', (total: number) => {
@@ -132,10 +128,19 @@ app
   .then(createWindow)
   .catch((err) => {
     logger.error('electron.error', err)
-    process.exit(0)
+
+    process.exitCode = 1
   })
 
 app.on('window-all-closed', () => {
-  logger.info('main', 'All windows closed')
-  app.quit()
+  logger.info('main', 'Terminating application')
+
+  process.exitCode = 1
 })
+
+// May not be entirely necessary for this app, but it gets
+// rid of the annoying "ERROR:gpu_init.cc] Passthrough is
+// not supported" error from appearing in the console. To
+// get rid of that error, we can either turn on gpu
+// rendering, or turn it off. I chose to have it on.
+app.commandLine.appendSwitch('force_high_performance_gpu')

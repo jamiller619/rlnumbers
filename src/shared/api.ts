@@ -1,6 +1,7 @@
-import { Player } from '@prisma/client'
+// import { Player } from '@prisma/client'
 import { ipcRenderer } from 'electron'
-import { Config, ConfigKey, ConfigValue, Paged, Replay } from './types'
+import { Config, ConfigKey, ConfigValue } from './config'
+import { Intl, Paged, Replay, ReplayEntity, Sort } from './types'
 
 const { invoke } = ipcRenderer
 
@@ -29,19 +30,27 @@ const api = {
   },
 
   replays: {
-    get: (page?: number, take?: number): Promise<Paged<Replay>> => {
-      return invoke('replays:get', page, take)
+    get: (
+      page?: number,
+      take?: number,
+      sort?: Sort<ReplayEntity>
+    ): Promise<Paged<Replay>> => {
+      return invoke('replays:get', page, take, sort)
     },
   },
 
   players: {
-    claim: (playerName: string) => invoke('players:claim', playerName),
-    getClaimed: (): Promise<Omit<Player, 'stats'>[]> => {
-      return invoke('players:getClaimed')
-    },
-    getAll: (): Promise<Player[]> => {
-      return invoke('players:getAll')
-    },
+    // claim: (playerName: string) => invoke('players:claim', playerName),
+    // getClaimed: (): Promise<Omit<Player, 'stats'>[]> => {
+    //   return invoke('players:getClaimed')
+    // },
+    // getAll: (): Promise<Player[]> => {
+    //   return invoke('players:getAll')
+    // },
+  },
+
+  intl: {
+    get: (): Promise<Intl | undefined> => invoke('intl:get'),
   },
 } as const
 

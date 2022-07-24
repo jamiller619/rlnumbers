@@ -1,5 +1,5 @@
 import EventEmitter from 'events'
-import { Paged, Progress, Replay } from '@shared/types'
+import { Paged, Progress, Replay, ReplayEntity, Sort } from '@shared/types'
 import { connect } from '~/db/client'
 import * as RRRocket from '~/lib/RRRocket'
 import RRRocketParser from '~/lib/RRRocketParser'
@@ -12,35 +12,46 @@ const client = connect()
 const emitter = new EventEmitter()
 
 export const deleteReplay = async (filePath: string) => {
-  await client.$transaction([
-    client.stats.deleteMany({
-      where: {
-        replay: {
+  try {
+    const [_, deletedReplay] = await client.$transaction([
+      client.stats.deleteMany({
+        where: {
+          replay: {
+            path: filePath,
+          },
+        },
+      }),
+      client.replay.delete({
+        where: {
           path: filePath,
         },
-      },
-    }),
-    client.replay.delete({
-      where: {
-        path: filePath,
-      },
-    }),
-  ])
+      }),
+    ])
+
+    emitter.emit('replay:deleted', deletedReplay.id)
+    logger.info('replay.delete', `Deleted replay "${filePath}"`)
+  } catch (err) {
+    logger.error('replay.delete', 'Unable to delete replay', err)
+  }
 }
 
 export const getReplays = async (
   page = 0,
-  take = 30
+  take = 30,
+  sort: Sort<ReplayEntity> = {
+    prop: 'createdAt',
+    order: 'desc',
+  }
 ): Promise<Paged<Replay>> => {
   const skip = Math.ceil(page * take)
   const [count, data] = await client.$transaction([
-    client.replay.count({
-      take,
-      skip,
-    }),
+    client.replay.count(),
     client.replay.findMany({
       take,
       skip,
+      orderBy: {
+        [sort.prop]: sort.order,
+      },
       include: {
         stats: {
           include: {
@@ -50,6 +61,11 @@ export const getReplays = async (
       },
     }),
   ])
+
+  logger.info(
+    'replay.get',
+    `Got replays with params ${JSON.stringify({ page, take, sort })}`
+  )
 
   return {
     data,
@@ -80,16 +96,22 @@ const importReplay = async (
   filePath: string,
   data: RRRocket.Replay
 ): Promise<Replay | undefined> => {
-  const { stats, ...parsedReplay } = parseReplay(filePath, data)
+  const { stats, ...parsedReplay } = await parseReplay(filePath, data)
 
   if (parsedReplay == null) {
     return
   }
 
-  const savedReplay = await client.replay.create({
-    data: {
+  const savedReplay = await client.replay.upsert({
+    where: {
+      hash: parsedReplay.hash,
+    },
+    create: {
       ...parsedReplay,
       createdAt: new Date(),
+    },
+    update: {
+      ...parsedReplay,
     },
   })
 
@@ -109,7 +131,9 @@ export const on = (event: string, handler: (...args: any[]) => void) => {
 export const importReplays = async (...files: string[]) => {
   const filesTotal = files.length
 
-  logger.info('replay.import', `Processing ${filesTotal} files for import...`)
+  if (filesTotal > 1) {
+    logger.info('replay.import', `Processing ${filesTotal} replays...`)
+  }
 
   const filtered = await filterReplays(...files)
   const toImportTotal = filtered.length
@@ -124,7 +148,7 @@ export const importReplays = async (...files: string[]) => {
 
   logger.info('replay.import', `Found ${toImportTotal} replay(s) to import...`)
 
-  let progress = filesTotal - toImportTotal
+  let progress = filesTotal - toImportTotal + 1
 
   for await (const parsedBatch of parser.parseReplays(...filtered)) {
     for await (const { file, data } of parsedBatch) {

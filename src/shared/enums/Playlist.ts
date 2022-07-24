@@ -18,3 +18,8 @@ enum Playlist {
 }
 
 export default Playlist
+
+export type CompetitivePlaylist =
+  | Playlist.DUEL
+  | Playlist.DOUBLES
+  | Playlist.STANDARD

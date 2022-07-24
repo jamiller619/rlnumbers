@@ -117,16 +117,16 @@ export const getSystemTheme = () => {
 
 // Logs each color role's name and hex value, in the color
 // it represents. Useful while in development.
-const logThemeColors = (theme: DefaultTheme) => {
-  const arr = Object.entries(theme.colors).map(([key, value]) => ({
-    name: key,
-    value,
-  }))
+// const logThemeColors = (theme: DefaultTheme) => {
+//   const arr = Object.entries(theme.colors).map(([key, value]) => ({
+//     name: key,
+//     value,
+//   }))
 
-  for (const { name, value } of arr) {
-    console.log(`${theme.name}: %c${name}:${value}`, `color:${value}`)
-  }
-}
+//   for (const { name, value } of arr) {
+//     console.log(`${theme.name}: %c${name}:${value}`, `color:${value}`)
+//   }
+// }
 
-logThemeColors(darkTheme)
-logThemeColors(lightTheme)
+// logThemeColors(darkTheme)
+// logThemeColors(lightTheme)

@@ -1,11 +1,15 @@
 import create, { SetState } from 'zustand'
-import { Progress, Replay } from '@shared/types'
+import { Progress, Replay, ReplayEntity, Sort } from '@shared/types'
 
 export type State = {
   import: Progress
   replays: Record<number, Replay>
 
-  fetchReplays: (page?: number, take?: number) => Promise<void>
+  fetchReplays: (
+    page?: number,
+    take?: number,
+    sort?: Sort<ReplayEntity>
+  ) => Promise<void>
 }
 
 const handleImportStart =
@@ -33,11 +37,19 @@ const handleImportProgress =
     })
   }
 
-const useStore = create((set: SetState<State>) => {
-  window.api?.on('import:start', handleImportStart(set))
-  window.api?.on('import:progress', handleImportProgress(set))
+const handleReplayDelete =
+  (set: SetState<State>) => (_: unknown, id: number) => {
+    set((prev) => {
+      const { replays } = prev
 
-  window.api?.on('replay:imported', (_: unknown, replay: Replay) => {
+      delete replays[id]
+
+      return { replays }
+    })
+  }
+
+const handleReplayImport =
+  (set: SetState<State>) => (_: unknown, replay: Replay) => {
     console.log('replay imported')
     set((prev) => ({
       replays: {
@@ -45,18 +57,26 @@ const useStore = create((set: SetState<State>) => {
         [replay.id]: replay,
       },
     }))
-  })
+  }
 
-  window.api?.on('import:complete', () => {
-    set({
-      import: {
-        progress: null,
-        total: null,
-        message: null,
-        status: null,
-      },
-    })
+const handleReplayComplete = (set: SetState<State>) => () => {
+  set({
+    import: {
+      progress: null,
+      total: null,
+      message: null,
+      status: null,
+    },
   })
+}
+
+const useStore = create((set: SetState<State>) => {
+  window.api?.on('import:start', handleImportStart(set))
+  window.api?.on('import:progress', handleImportProgress(set))
+
+  window.api?.on('replay:deleted', handleReplayDelete(set))
+  window.api?.on('replay:imported', handleReplayImport(set))
+  window.api?.on('import:complete', handleReplayComplete(set))
 
   return {
     import: {
@@ -66,8 +86,12 @@ const useStore = create((set: SetState<State>) => {
       status: null,
     },
     replays: {},
-    fetchReplays: async (page?: number, take?: number) => {
-      const paged = await window.api?.replays.get(page, take)
+    fetchReplays: async (
+      page?: number,
+      take?: number,
+      sort?: Sort<ReplayEntity>
+    ) => {
+      const paged = await window.api?.replays.get(page, take, sort)
 
       if (paged && Array.isArray(paged.data) && paged.data.length > 0) {
         set((prev) => ({
@@ -83,5 +107,7 @@ const useStore = create((set: SetState<State>) => {
     },
   }
 })
+
+window.getState = () => useStore.getState()
 
 export default useStore

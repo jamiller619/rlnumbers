@@ -10,7 +10,7 @@ const shared: UserConfig = {
   plugins: [tsconfigPaths()],
   build: {
     outDir: '../../dist',
-    minify: process.env.NODE_ENV === 'production',
+    minify: process.env.NODE_ENV !== 'development',
     sourcemap: true,
     rollupOptions: {
       external: [
@@ -23,4 +23,15 @@ const shared: UserConfig = {
   },
 }
 
-export default shared
+// export default shared
+export default function merge(config: UserConfig) {
+  return {
+    ...config,
+    ...shared,
+    plugins: [...(config.plugins ?? []), ...(shared.plugins ?? [])],
+    build: {
+      ...config.build,
+      ...shared.build,
+    },
+  }
+}

@@ -1,8 +1,11 @@
 import path from 'node:path'
 import { Platform, Playlist } from '@shared/enums'
-import { Map, PlayerDTO, ReplayDTO, StatsDTO } from '@shared/types'
+import { PlayerDTO, ReplayDTO, StatsDTO } from '@shared/types'
 import { isValidDate } from '@shared/utils/date'
 import * as RRRocket from '~/lib/RRRocket'
+import MapIdMap from '~/maps/MapIdMap'
+import PlatformMap from '~/maps/PlatformMap'
+import { saveUnknownValue } from '~/unknown/unknown.service'
 import logger from '~/utils/logger'
 
 // Replay date format: "YYYY-MM-DD HH-MM-SS"
@@ -24,41 +27,40 @@ const parseOnlineId = (onlineId?: string | null) => {
   return onlineId
 }
 
-const PlatformMap = {
-  dingo: Platform.XBOX,
-  xbox: Platform.XBOX,
-  ps3: Platform.PSN,
-  ps4: Platform.PSN,
-  steam: Platform.STEAM,
-  unknown: Platform.UNKNOWN,
-  epic: Platform.EPIC,
-}
-
 const parsePlatform = (platform?: RRRocket.Platform): Platform | undefined => {
   if (platform?.kind === 'OnlinePlatform') {
     const name = platform.value
       .replace('OnlinePlatform_', '')
-      .toLowerCase() as keyof typeof PlatformMap
+      .toUpperCase() as keyof typeof PlatformMap
 
-    return PlatformMap[name] ?? Platform.UNKNOWN
-  } else {
-    logger.warn('replay.parser', `Found unknown platform "${platform}"`)
+    return PlatformMap[name]
   }
 }
 
-const parsePlayer = (data: RRRocket.PlayerStats): PlayerDTO => {
+const parsePlayer = async (data: RRRocket.PlayerStats): Promise<PlayerDTO> => {
+  const platform = parsePlatform(data.Platform)
+
+  if (platform == null) {
+    logger.warn(
+      'replay.parser',
+      `Found unknown platform "${data.Platform.value}"`
+    )
+
+    await saveUnknownValue('platform', data.Platform.value)
+  }
+
   return {
     name: data.Name,
     aka: null,
     onlineId: parseOnlineId(data.OnlineID) ?? null,
-    platform: parsePlatform(data.Platform) ?? null,
+    platform: platform ?? null,
   }
 }
 
-const parseStats = (
+const parseStats = async (
   stats: RRRocket.PlayerStats,
   debugInfo: RRRocket.DebugInfo[]
-): StatsDTO => {
+): Promise<StatsDTO> => {
   const playerInfo = debugInfo.find((d) => {
     const { user } = d
     const pid = user.split('|')[1]
@@ -68,6 +70,7 @@ const parseStats = (
 
   const mmrText = playerInfo?.text ?? null
   const mmr = mmrText?.split('|')?.[0]
+  const player = await parsePlayer(stats)
 
   return {
     assists: stats.Assists,
@@ -78,40 +81,53 @@ const parseStats = (
     team: stats.Team,
     mmr: mmr ? Math.round(Number(mmr)) : null,
     demos: null,
-    player: parsePlayer(stats),
+    player,
   }
 }
 
-const parsePlayerStats = (data: RRRocket.Replay): StatsDTO[] => {
+const parsePlayerStats = (data: RRRocket.Replay): Promise<StatsDTO[]> => {
   const stats = data.properties.PlayerStats ?? []
 
-  return stats.map((s) => parseStats(s, data.debug_info))
+  return Promise.all(stats.map((s) => parseStats(s, data.debug_info)))
 }
 
-export const parseReplay = (
+export const parseReplay = async (
   filePath: string,
   data: RRRocket.Replay
-): ReplayDTO => {
+): Promise<ReplayDTO> => {
   const fileName = path.basename(filePath)
   const playlist = data.properties.MatchType.toUpperCase() as Uppercase<
     keyof typeof Playlist
   >
   const mapName = data.properties.MapName.toUpperCase() as Uppercase<
-    keyof typeof Map
+    keyof typeof MapIdMap
   >
+  const map = MapIdMap[mapName] ? MapIdMap[mapName].join('.') : null
+
+  if (map == null) {
+    logger.warn('replay.parser', `Found unknown map "${mapName}"`)
+
+    await saveUnknownValue('map', mapName)
+  }
+
+  if (playlist == null) {
+    logger.warn('replay.parser', `Found unknown playlist "${playlist}"`)
+
+    await saveUnknownValue('playlist', playlist)
+  }
 
   return {
     path: filePath,
     name: fileName,
     matchDate: parseDate(data.properties.Date) ?? null,
     hash: data.header_crc.toString(),
-    map: Map[mapName] ?? null,
+    map,
     playlist: Playlist[playlist] ?? null,
     matchLength: Math.round(
       data.properties.NumFrames / data.properties.RecordFPS
     ),
     ranked: null,
     season: null,
-    stats: parsePlayerStats(data),
+    stats: await parsePlayerStats(data),
   }
 }

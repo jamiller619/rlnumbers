@@ -1,15 +1,15 @@
 import { RouteObject, useRoutes } from 'react-router-dom'
 import Layout from '~/components/Layout'
-import { Game, Overview } from '~/pages'
+import { Home, Match, Settings } from '~/pages'
 
 const routes: RouteObject[] = [
   {
     path: '/',
     element: <Layout />,
     children: [
-      { index: true, element: <Overview /> },
-      { path: '/replay', element: <Game /> },
-      // { path: '/settings', element: <Settings /> },
+      { index: true, element: <Home /> },
+      { path: '/match', element: <Match /> },
+      { path: '/settings', element: <Settings /> },
     ],
   },
 ]
