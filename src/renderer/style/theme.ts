@@ -1,132 +1,90 @@
-import Color from 'color'
+import { crimson, green, mauve, mauveDark, red, yellow } from '@radix-ui/colors'
 import { DefaultTheme } from 'styled-components'
+import theme from './theme.json'
 
-type ColorRoleWithAlts = 'surface' | 'primary'
-export type ColorRole =
-  | ColorRoleWithAlts
-  | 'black'
-  | 'white'
+type ColorRole =
+  | 'primary'
+  | 'surface'
   | 'accent'
   | 'success'
   | 'warning'
-  | 'critical'
+  | 'danger'
 
-const weights = [
-  25, 50, 75, 100, 150, 200, 250, 300, 400, 500, 600, 700,
+const alts = [
+  'Base',
+  'BgSubtle',
+  'Bg',
+  'BgHover',
+  'BgActive',
+  'Line',
+  'Border',
+  'BorderHover',
+  'Solid',
+  'SolidHover',
+  'Text',
+  'TextContrast',
 ] as const
 
-export type ColorWeight = typeof weights[number]
-export type Colors = {
-  [key in ColorRole | `${ColorRoleWithAlts}${ColorWeight}`]: string
-}
+type ColorRoleAlts = `${ColorRole}${typeof alts[number]}`
 
-const weightsLen = weights.length
-const primaryWhite = Color('#e1e1e1')
-const primaryBlack = Color('#1c1c1c')
+export type Colors = Record<ColorRoleAlts, string>
 
-const colors: Pick<
-  Colors,
-  'success' | 'warning' | 'critical' | 'white' | 'black'
-> = {
-  success: '#06d6a0',
-  warning: '#ffb94f',
-  critical: '#ff3b30',
-  black: primaryBlack.hex(),
-  white: primaryWhite.hex(),
-}
+const createAliases = (
+  color: Record<string, string>,
+  role: ColorRole
+): Record<ColorRoleAlts, string> => {
+  const alias = {} as Record<string, string>
+  const keys = Object.keys(color)
 
-const parseColorAlternates = (
-  colorName: ColorRoleWithAlts,
-  alts: Record<ColorWeight | 0, string>
-) => {
-  const initial = {
-    [colorName]: alts['0'],
-  } as Record<ColorRoleWithAlts | `${ColorRoleWithAlts}${ColorWeight}`, string>
-
-  return Object.entries(alts)
-    .slice(1)
-    .reduce((result, [altKey, altValue]) => {
-      const resultKey =
-        `${colorName}${altKey}` as `${ColorRoleWithAlts}${ColorWeight}`
-
-      result[resultKey] = altValue
-
-      return result
-    }, initial)
-}
-
-const createColorAlternates = (color: Color, mix: Color) => {
-  const result = {
-    [0]: color.hex(),
-  } as Record<ColorWeight | 0, string>
-
-  for (let i = 0; i < weightsLen; i += 1) {
-    const weight = weights[i]
-
-    result[weight] = color.mix(mix, weight / 1000).hex()
+  for (let i = 0; i < keys.length; i += 1) {
+    alias[`${role}${alts[i]}`] = color[keys[i]]
   }
 
-  return result
+  return alias
 }
 
-const createColors = (theme: 'dark' | 'light') => {
-  const isDark = theme === 'dark'
-  const mix = isDark ? Color('black') : Color('white')
+const sharedColors = [
+  { name: 'accent', color: crimson },
+  { name: 'success', color: green },
+  { name: 'warning', color: yellow },
+  { name: 'danger', color: red },
+] as const
 
-  return {
-    ...parseColorAlternates(
-      'surface',
-      createColorAlternates(isDark ? primaryBlack : primaryWhite, mix)
-    ),
-    ...parseColorAlternates(
-      'primary',
-      createColorAlternates(isDark ? primaryWhite : primaryBlack, mix)
-    ),
-  }
+const lightThemeColors = [
+  { name: 'primary', color: mauveDark },
+  { name: 'surface', color: mauve },
+] as const
+
+const darkThemeColors = [
+  { name: 'primary', color: mauve },
+  { name: 'surface', color: mauveDark },
+] as const
+
+const createColorTheme = (colors: typeof sharedColors) => {
+  return colors.reduce((acc, { name, color }) => {
+    return {
+      ...acc,
+      ...createAliases(color, name),
+    }
+  }, {} as Colors)
 }
 
-export const darkTheme: DefaultTheme = {
-  name: 'dark',
-  borderRadius: '5px',
-  colors: {
-    ...colors,
-    accent: '#65d4e7',
-    ...createColors('dark'),
-  },
-}
+const shared = createColorTheme(sharedColors)
 
-export const lightTheme: DefaultTheme = {
-  name: 'light',
-  borderRadius: '5px',
-  colors: {
-    ...colors,
-    accent: '#1bbd69',
-    ...createColors('light'),
-  },
-}
+const createTheme = (
+  name: 'light' | 'dark',
+  themeColors: typeof darkThemeColors | typeof lightThemeColors
+): DefaultTheme => ({
+  name,
+  ...theme,
+  colors: themeColors.reduce((acc, color) => {
+    return {
+      ...acc,
+      ...createAliases(color.color, color.name),
+    }
+  }, shared),
+})
 
-export const getSystemTheme = () => {
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)')
+export const lightTheme = createTheme('light', lightThemeColors)
 
-  if (prefersDark.matches) {
-    return 'dark'
-  }
-
-  return 'light'
-}
-
-// Logs each color role's name and hex value, in the color
-// it represents. Useful while in development.
-// const logThemeColors = (theme: DefaultTheme) => {
-//   const arr = Object.entries(theme.colors).map(([key, value]) => ({
-//     name: key,
-//     value,
-//   }))
-
-//   for (const { name, value } of arr) {
-//     console.log(`${theme.name}: %c${name}:${value}`, `color:${value}`)
-//   }
-// }
-
-// logThemeColors(darkTheme)
-// logThemeColors(lightTheme)
+export const darkTheme = createTheme('dark', darkThemeColors)

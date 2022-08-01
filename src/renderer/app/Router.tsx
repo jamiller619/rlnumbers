@@ -1,13 +1,14 @@
 import { RouteObject, useRoutes } from 'react-router-dom'
-import Layout from '~/components/Layout'
-import { Home, Match, Settings } from '~/pages'
+import Main from '~/app/Main'
+import { Settings } from '~/features/settings'
+import { Match, Overview } from '~/pages'
 
 const routes: RouteObject[] = [
   {
     path: '/',
-    element: <Layout />,
+    element: <Main />,
     children: [
-      { index: true, element: <Home /> },
+      { index: true, element: <Overview /> },
       { path: '/match', element: <Match /> },
       { path: '/settings', element: <Settings /> },
     ],

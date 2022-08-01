@@ -1,59 +1,44 @@
-import fs from 'node:fs/promises'
-import path from 'node:path'
-import process from 'node:process'
-import { Config, ConfigKey, ConfigValue, defaultConfig } from '@shared/config'
+import EventEmitter from 'node:events'
+import Store from 'electron-store'
+import { Theme } from '@shared/enums'
+import type { Config, ConfigValue } from '@shared/types'
 import logger from '~/utils/logger'
 
-const { CONFIG_DIR } = process.env
+const store = new Store<Config>({
+  accessPropertiesByDotNotation: false,
+  name: 'config',
+  defaults: {
+    dirs: null,
+    rrrocketVersion: '0.9.3',
+    theme: Theme.auto,
+  },
+})
 
-const filePath = path.resolve('./dist/config.json')
+const emitter = new EventEmitter()
 
-let config: Config | null = null
+export const on = emitter.on.bind(emitter)
+export const off = emitter.off.bind(emitter)
+export const emit = emitter.emit.bind(emitter)
 
-const writeToFile = async (data: Config) => {
-  await fs.writeFile(filePath, JSON.stringify(data), 'utf8')
+export const getConfig = () => {
+  return store.store
 }
 
-export const getConfig = async () => {
-  if (config != null) {
-    return config
-  }
+export const get = <T extends ConfigValue>(key: keyof Config) => {
+  return store.get(key) as T
+}
 
+export const set = async <T extends ConfigValue>(
+  key: keyof Config,
+  value: T
+) => {
   try {
-    const data = await fs.readFile(filePath, 'utf8')
+    store.set(key, value)
 
-    config = JSON.parse(data) as Config
-  } catch {
-    await writeToFile(defaultConfig)
+    logger.debug('config.set', `Config updated: "${key}": "${value}"`)
 
-    config = defaultConfig
-  }
-
-  return config
-}
-
-export const get = async (key?: ConfigKey) => {
-  const data = await getConfig()
-
-  return key ? data[key] : data
-}
-
-export const set = async (key: ConfigKey, value: ConfigValue) => {
-  try {
-    const oldConfig = await getConfig()
-    const newConfig: Config = {
-      ...oldConfig,
-      [key]: value,
-    }
-
-    await writeToFile(newConfig)
-
-    config = newConfig
+    emitter.emit('change', store.store)
   } catch (err) {
-    logger.error('config.save', err)
-
-    throw err
+    logger.error('config.set', 'Unable to save config', err)
   }
-
-  return config
 }

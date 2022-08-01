@@ -1,15 +1,83 @@
-import EventEmitter from 'events'
-import { Paged, Progress, Replay, ReplayEntity, Sort } from '@shared/types'
+import EventEmitter from 'node:events'
+import { ReplayFileCount } from '@shared/api'
+import {
+  Paged,
+  Player,
+  PlayerDTO,
+  Progress,
+  Replay,
+  ReplayEntity,
+  Sort,
+} from '@shared/types'
 import { connect } from '~/db/client'
-import * as RRRocket from '~/lib/RRRocket'
-import RRRocketParser from '~/lib/RRRocketParser'
+import type { RRRocket } from '~/lib/rrrocket'
 import { savePlayerStats } from '~/players/player.service'
+import directoryMap from '~/replays/directory.map'
+import { parseReplay } from '~/replays/replay.parser'
 import logger from '~/utils/logger'
-import { parseReplay } from './replay.parser'
 
-const parser = new RRRocketParser()
 const client = connect()
 const emitter = new EventEmitter()
+
+export const on = emitter.on.bind(emitter)
+export const off = emitter.off.bind(emitter)
+export const emit = emitter.emit.bind(emitter)
+
+const ext = '.replay'
+export const isReplay = (file: string) => file.endsWith(ext)
+
+export async function* getReplayFiles(...dirs: string[]) {
+  const { default: klaw } = await import('klaw')
+
+  for (const dir of dirs) {
+    try {
+      for await (const file of klaw(dir)) {
+        if (isReplay(file.path)) {
+          yield file.path
+        }
+      }
+    } catch (err) {
+      logger.error(
+        'replay.getReplayFiles',
+        `Unable to get replay files in "${dir}"`,
+        err
+      )
+    }
+  }
+}
+
+const COUNT_LIMIT = 150
+
+export async function* countReplayFiles(
+  ...dirs: string[]
+): AsyncIterable<ReplayFileCount> {
+  let count = 0
+  const len = Math.min(dirs.length, COUNT_LIMIT)
+
+  for await (const file of getReplayFiles(...dirs)) {
+    if (count < len && count < COUNT_LIMIT) {
+      count++
+
+      yield {
+        file,
+        count,
+      }
+    } else {
+      break
+    }
+  }
+
+  return count
+}
+
+export const getDefaultDirectory = async () => {
+  const { platform, homedir } = await import('node:os')
+  const { normalize } = await import('node:path')
+
+  const dir = directoryMap[platform()]
+
+  return normalize(dir.replace('%HOME%', homedir()))
+}
 
 export const deleteReplay = async (filePath: string) => {
   try {
@@ -62,9 +130,9 @@ export const getReplays = async (
     }),
   ])
 
-  logger.info(
-    'replay.get',
-    `Got replays with params ${JSON.stringify({ page, take, sort })}`
+  logger.debug(
+    'query.replays',
+    `Queried replays w/params: ${JSON.stringify({ page, take, sort })}`
   )
 
   return {
@@ -92,15 +160,38 @@ const filterReplays = async (...files: string[]) => {
   return files.filter((f) => !replays.includes(f))
 }
 
+const handleOwner = async (
+  replay: ReplayEntity,
+  players: Player[],
+  owner?: PlayerDTO | null
+) => {
+  if (owner == null) {
+    return replay
+  }
+
+  const ownerId = players.find(
+    (p) => p.name === owner.name && p.onlineId === owner.onlineId
+  )?.id
+
+  if (ownerId == null) {
+    return replay
+  }
+
+  return client.replay.update({
+    where: {
+      id: replay.id,
+    },
+    data: {
+      ownerId,
+    },
+  })
+}
+
 const importReplay = async (
   filePath: string,
   data: RRRocket.Replay
 ): Promise<Replay | undefined> => {
-  const { stats, ...parsedReplay } = await parseReplay(filePath, data)
-
-  if (parsedReplay == null) {
-    return
-  }
+  const { stats, owner, ...parsedReplay } = await parseReplay(filePath, data)
 
   const savedReplay = await client.replay.upsert({
     where: {
@@ -116,19 +207,16 @@ const importReplay = async (
   })
 
   const savedStats = await savePlayerStats(savedReplay.id, stats)
+  const players = savedStats.map((s) => s.player)
 
   return {
-    ...savedReplay,
+    ...(await handleOwner(savedReplay, players, owner)),
     stats: savedStats,
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const on = (event: string, handler: (...args: any[]) => void) => {
-  emitter.removeAllListeners(event).on(event, handler)
-}
-
 export const importReplays = async (...files: string[]) => {
+  const { parseReplays } = await import('~/lib/rrrocket')
   const filesTotal = files.length
 
   if (filesTotal > 1) {
@@ -150,7 +238,7 @@ export const importReplays = async (...files: string[]) => {
 
   let progress = filesTotal - toImportTotal + 1
 
-  for await (const parsedBatch of parser.parseReplays(...filtered)) {
+  for await (const parsedBatch of parseReplays(false, ...filtered)) {
     for await (const { file, data } of parsedBatch) {
       const event: Progress = {
         progress,

@@ -1,13 +1,12 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import process from 'node:process'
+import chalk from 'chalk'
+import recurse from 'recursive-readdir'
 
-const configSrc = path.resolve('./src/shared/config/config.json')
-const configDest = path.resolve('./dist/config.json')
-
-const intlSrc = path.resolve('./src/main/intl/locales')
-const intlDest = path.resolve('./dist/locales')
-
-const overwrite = process.argv.includes('--overwrite')
+const cwd = process.cwd()
+const src = path.resolve(cwd, process.argv[2])
+const dest = path.resolve(cwd, process.argv[3])
 
 const exists = async (path: string) => {
   try {
@@ -19,34 +18,24 @@ const exists = async (path: string) => {
   }
 }
 
-const intlDestExists = await exists(intlDest)
+const destExists = await exists(dest)
 
-if (!intlDestExists) {
-  await fs.mkdir(intlDest)
+if (!destExists) {
+  await fs.mkdir(dest, { recursive: true })
 }
 
-const copyIntlFiles = async (overwrite: boolean) => {
-  const files = await fs.readdir(intlSrc)
+const files = await recurse(src)
 
-  for await (const file of files) {
-    const src = path.resolve(intlSrc, file)
-    const dest = path.resolve(intlDest, file)
+console.log('\nCopied:')
 
-    const fileExists = await exists(dest)
+for await (const file of files) {
+  const name = path.basename(file)
+  const destFile = path.resolve(dest, name)
 
-    if (!fileExists || overwrite) {
-      await fs.copyFile(src, dest)
-    }
-  }
+  await fs.copyFile(file, destFile)
+  console.log(
+    ` ${chalk.dim(file)}
+  ↪ ${chalk.green(destFile)}
+  `
+  )
 }
-
-const copyConfigFile = async (overwrite: boolean) => {
-  const fileExists = await exists(configSrc)
-
-  if (!fileExists || overwrite) {
-    await fs.copyFile(configSrc, configDest)
-  }
-}
-
-await copyConfigFile(overwrite)
-await copyIntlFiles(overwrite)

@@ -1,9 +1,10 @@
 import { UserConfig } from 'vite'
-import merge from '../../vite.config.shared'
+import merge, { getNodeVersion } from '../../vite.config.shared'
 
 const config: UserConfig = {
   root: __dirname,
   build: {
+    target: getNodeVersion(),
     lib: {
       entry: 'index.ts',
       formats: ['cjs'],

@@ -1,23 +1,22 @@
-import { Fragment, ReactNode } from 'react'
+import { Fragment, ReactNode, useMemo } from 'react'
 import {
   StyleSheetManager,
   ThemeProvider,
   createGlobalStyle,
 } from 'styled-components'
 import reset from 'styled-reset'
-// import useStore, { State } from '~/store/useStore'
+import { useDarkMode } from 'usehooks-ts'
 import { darkTheme, lightTheme } from './theme'
 
 const GlobalStyle = createGlobalStyle`
   ${reset}
 
   body {
-    background: ${({ theme }) => theme.colors.surface};
-    color: ${({ theme }) => theme.colors.primary};
-    font-family: 'SF', 'Segoe UI', sans-serif;
+    background: ${({ theme }) => theme.colors.surfaceBase};
+    color: ${({ theme }) => theme.colors.primaryBase};
+    font-family: 'SF Mono', 'Segoe UI', sans-serif;
     font-size: 18px;
     font-weight: 400;
-    line-height: 1.4;
     -webkit-font-smoothing: antialiased;
     overflow: hidden;
   }
@@ -27,9 +26,9 @@ const GlobalStyle = createGlobalStyle`
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: ${({ theme }) => theme.colors.primary600};
+    background-color: ${({ theme }) => theme.colors.primaryBg};
     border-radius: 6px;
-    border: 3px solid ${({ theme }) => theme.colors.surface};
+    border: 3px solid ${({ theme }) => theme.colors.surfaceBorder};
     transition: background-color 2s ease-out;
   }
 
@@ -38,18 +37,19 @@ const GlobalStyle = createGlobalStyle`
   }
 `
 
-// const selector = ({ theme }: State) => theme
-
 export default function StyleProvider({
   children,
 }: {
   children: ReactNode
 }): JSX.Element {
-  // const themeName = useStore(selector)
-  // const theme = themeName === 'dark' ? darkTheme : lightTheme
+  const { isDarkMode } = useDarkMode()
+  const theme = useMemo(
+    () => (isDarkMode ? darkTheme : lightTheme),
+    [isDarkMode]
+  )
 
   return (
-    <ThemeProvider theme={darkTheme}>
+    <ThemeProvider theme={theme}>
       <StyleSheetManager disableVendorPrefixes>
         <Fragment>
           <GlobalStyle />

@@ -1,10 +1,12 @@
 import { HTMLAttributes, ReactNode } from 'react'
 import styled from 'styled-components'
+import { Box, BoxProps } from '~/components/elements'
 
-type PageProps = Omit<HTMLAttributes<HTMLDivElement>, 'title'> & {
-  children: ReactNode | ReactNode[]
-  title: string
-}
+type PageProps = Omit<HTMLAttributes<HTMLDivElement>, 'title'> &
+  BoxProps & {
+    children: ReactNode | ReactNode[]
+    title: string
+  }
 
 const Title = styled.h1`
   margin: 2rem 0 1rem 2rem;
@@ -21,9 +23,9 @@ export default function Page({
   ...props
 }: PageProps): JSX.Element {
   return (
-    <div {...props}>
+    <Box {...props}>
       <Title>{title}</Title>
       <Content>{children}</Content>
-    </div>
+    </Box>
   )
 }

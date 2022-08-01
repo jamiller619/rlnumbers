@@ -1,13 +1,19 @@
-// import { Player } from '@prisma/client'
 import { ipcRenderer } from 'electron'
-import { Config, ConfigKey, ConfigValue } from './config'
+import { Config, ConfigKey, ConfigValue } from './types'
 import { Intl, Paged, Replay, ReplayEntity, Sort } from './types'
 
 const { invoke } = ipcRenderer
 
+export type ReplayFileCount = {
+  file: string
+  count: number
+}
+
 const api = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  on: (event: string, listener: (event: unknown, ...args: any[]) => void) => {
+  on: <T = never>(
+    event: string,
+    listener: (event: unknown, ...args: T[]) => void
+  ) => {
     ipcRenderer.on(event, listener)
   },
 
@@ -18,18 +24,28 @@ const api = {
     ipcRenderer.removeListener(event, listener)
   },
 
+  window: {
+    close: () => invoke('window:close'),
+    maximize: () => invoke('window:maximize'),
+    minimize: () => invoke('window:minimize'),
+    unmaximize: () => invoke('window:unmaximize'),
+  },
+
   config: {
-    get: (key?: ConfigKey) => invoke('config:get', key),
+    get: <T extends ConfigValue>(key: ConfigKey) =>
+      invoke('config:get', key) as Promise<T>,
     set: (key: ConfigKey, value: ConfigValue): Promise<Config> => {
       return invoke('config:set', key, value)
     },
   },
 
   dialog: {
-    openDirectory: () => invoke('dialog:openDirectory'),
+    openDirectory: (): Promise<string[]> => invoke('dialog:openDirectory'),
   },
 
   replays: {
+    getDefaultDirectory: (): Promise<string> =>
+      invoke('replays:getDefaultDirectory'),
     get: (
       page?: number,
       take?: number,

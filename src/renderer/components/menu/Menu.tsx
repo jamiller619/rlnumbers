@@ -1,8 +1,7 @@
-import Color from 'color'
 import { HTMLAttributes } from 'react'
 import { VscHome, VscRocket, VscSettingsGear } from 'react-icons/vsc'
 import { Link, LinkProps, useMatch, useResolvedPath } from 'react-router-dom'
-import styled from 'styled-components'
+import styled, { DefaultTheme, css } from 'styled-components'
 import Logo from './Logo'
 
 const Container = styled.div`
@@ -17,7 +16,7 @@ const StyledLogo = styled(Logo)`
   width: 64px;
 `
 
-const Nav = styled.div`
+const Navigation = styled.div`
   display: flex;
   flex-direction: inherit;
 
@@ -27,12 +26,12 @@ const Nav = styled.div`
 `
 
 const StyledNavLink = styled(Link)<{ $active: boolean }>`
-  color: ${({ theme, $active }) =>
-    $active ? theme.colors.accent : theme.colors.primary500};
-  cursor: ${({ $active }) => ($active ? 'default' : 'pointer')};
+  border-width: 2px;
+  border-style: solid;
+  color: ${({ theme }) => theme.colors.primaryBase};
+  cursor: pointer;
+  border-color: transparent;
   border-radius: 0.75rem;
-  border: 2px solid
-    ${({ theme, $active }) => ($active ? theme.colors.accent : 'transparent')};
   padding: 0.5rem;
   display: flex;
   align-items: center;
@@ -41,11 +40,19 @@ const StyledNavLink = styled(Link)<{ $active: boolean }>`
   transition-duration: 200ms;
   transition-timing-function: ease-in-out;
 
-  &:hover {
-    color: ${({ theme, $active }) => !$active && theme.colors.primary};
-    background: ${({ theme, $active }) =>
-      !$active && Color(theme.colors.primary).alpha(0.05).rgb().string()};
-  }
+  ${({ $active }) =>
+    $active
+      ? css`
+          color: ${({ theme }) => theme.colors.accentSolid};
+          cursor: unset;
+          border-color: ${({ theme }) => theme.colors.accentSolid};
+        `
+      : css`
+          &:hover {
+            color: ${({ theme }) => theme.colors.surfaceText};
+            background: ${({ theme }) => theme.colors.surfaceBgHover};
+          }
+        `}
 
   svg {
     fill: currentColor;
@@ -73,14 +80,14 @@ export default function Menu(props: HTMLAttributes<HTMLElement>): JSX.Element {
   return (
     <Container {...props}>
       <StyledLogo />
-      <Nav>
+      <Navigation>
         <NavLink to="/">
           <VscHome />
         </NavLink>
         <NavLink to="/match">
           <VscRocket />
         </NavLink>
-      </Nav>
+      </Navigation>
       <SettingsLink to="/settings">
         <VscSettingsGear />
       </SettingsLink>

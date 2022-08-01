@@ -1,30 +1,29 @@
-import path from 'node:path'
-import process from 'node:process'
+import { join } from 'node:path'
+import { versions } from 'node:process'
 import { BrowserWindow, app, dialog, ipcMain } from 'electron'
-import { Config, ConfigKey, ConfigValue } from '@shared/config'
-import { Progress, Replay, ReplayEntity, Sort } from '@shared/types'
+import {
+  ConfigKey,
+  ConfigValue,
+  Progress,
+  Replay,
+  ReplayEntity,
+  Sort,
+} from '@shared/types'
 import wait from '@shared/utils/wait'
+import { configService, isDev } from '~/config'
 import logger from '~/utils/logger'
-import * as configService from './config/config.service'
-import * as intlService from './intl/intl.service'
-import * as replayService from './replays/replay.service'
-import * as replayWatcher from './replays/replay.watcher'
-
-const isDev = process.env.NODE_ENV === 'development'
+import { replayService, replayWatcher } from './replays'
 
 logger.info('main', `Starting main process in ${isDev ? 'DEV' : 'PROD'} mode`)
 
-let mainWindow: BrowserWindow | null = null
-
-const initApp = async () => {
-  const config = await configService.getConfig()
-
-  if (config.dirs.length === 0) {
-    logger.info('main', 'No replay directories configured.')
-  } else {
-    replayWatcher.watch(...config.dirs)
-  }
+if (isDev) {
+  logger.debug(
+    'main',
+    `running Electron v${versions.electron} w/Chrome v${versions.chrome}`
+  )
 }
+
+let mainWindow: BrowserWindow | null = null
 
 const createWindow = () => {
   logger.info('main', 'Main window created')
@@ -38,10 +37,6 @@ const createWindow = () => {
       show: false,
       backgroundColor: '#161616',
       titleBarStyle: 'hidden',
-      titleBarOverlay: {
-        color: '#161616',
-        symbolColor: '#fff',
-      },
       webPreferences: {
         nodeIntegration: false, // default in Electron >= 5
         contextIsolation: true, // default in Electron >= 12
@@ -49,14 +44,16 @@ const createWindow = () => {
         // turned on, ONLY in DEV, to allow loading of local
         // files (images) when using the dev server
         webSecurity: isDev ? false : true,
-        preload: path.join(__dirname, 'preload.cjs'),
+        preload: join(__dirname, 'preload.cjs'),
       },
     })
 
   mainWindow.once('ready-to-show', async () => {
     mainWindow?.show()
 
-    await initApp()
+    await wait(5)
+
+    replayWatcher.start()
   })
 
   if (isDev) {
@@ -64,7 +61,7 @@ const createWindow = () => {
 
     wait(1).then(() => mainWindow?.webContents.openDevTools())
   } else {
-    mainWindow.loadFile(path.join(__dirname, 'index.html'))
+    mainWindow.loadFile(join(__dirname, 'index.html'))
   }
 
   ipcMain.handle('dialog:openDirectory', async () => {
@@ -73,11 +70,11 @@ const createWindow = () => {
         properties: ['openDirectory'],
       })
 
-      return canceled ? undefined : filePaths[0]
+      return canceled ? undefined : filePaths
     }
   })
 
-  ipcMain.handle('config:get', (_, key: keyof Config) => {
+  ipcMain.handle('config:get', (_, key: ConfigKey) => {
     return configService?.get(key)
   })
 
@@ -92,7 +89,27 @@ const createWindow = () => {
     }
   )
 
-  ipcMain.handle('intl:get', () => {
+  ipcMain.handle('window:close', () => mainWindow?.close())
+  ipcMain.handle('window:maximize', () => mainWindow?.maximize())
+  ipcMain.handle('window:minimize', () => mainWindow?.minimize())
+  ipcMain.handle('window:unmaximize', () => mainWindow?.unmaximize())
+
+  ipcMain.handle('replays:getDefaultDirectory', () => {
+    return replayService.getDefaultDirectory()
+  })
+
+  ipcMain.handle(
+    'replays:countDirectory',
+    async (_: unknown, ...dirs: string[]) => {
+      for await (const count of replayService.countReplayFiles(...dirs)) {
+        mainWindow?.webContents.send('replay:count', count)
+      }
+    }
+  )
+
+  ipcMain.handle('intl:get', async () => {
+    const { intlService } = await import('~/intl')
+
     return intlService.getIntl()
   })
 
@@ -128,14 +145,12 @@ app
   .then(createWindow)
   .catch((err) => {
     logger.error('electron.error', err)
-
-    process.exitCode = 1
   })
 
 app.on('window-all-closed', () => {
   logger.info('main', 'Terminating application')
 
-  process.exitCode = 1
+  app.quit()
 })
 
 // May not be entirely necessary for this app, but it gets

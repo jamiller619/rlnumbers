@@ -1,13 +1,14 @@
 import react from '@vitejs/plugin-react'
 import { UserConfig } from 'vite'
-import merge from '../../vite.config.shared'
+import merge, { getChromeVersion } from '../../vite.config.shared'
 
 const config: UserConfig = {
   root: __dirname,
   plugins: [react()],
   build: {
+    target: getChromeVersion(),
     outDir: '../../dist',
-    target: 'es2022',
+    polyfillModulePreload: false,
   },
 }
 

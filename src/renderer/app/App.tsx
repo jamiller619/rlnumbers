@@ -1,6 +1,6 @@
 import { BrowserRouter } from 'react-router-dom'
+import Router from '~/app/Router'
 import StyleProvider from '~/style/StyleProvider'
-import Router from './Router'
 
 export default function App(): JSX.Element {
   return (

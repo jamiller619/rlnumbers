@@ -1,4 +1,4 @@
-import { PlayerDTO, Stats, StatsDTO } from '@shared/types'
+import type { PlayerDTO, Stats, StatsDTO } from '@shared/types'
 import { connect } from '~/db/client'
 
 const client = connect()
@@ -15,6 +15,24 @@ const savePlayer = async (player: PlayerDTO) => {
   }
 
   if (player.onlineId != null) {
+    const existing = await client.player.findFirst({
+      where: {
+        onlineId: player.onlineId,
+      },
+    })
+
+    if (existing != null && existing.name !== player.name) {
+      return client.player.update({
+        where: {
+          onlineId: player.onlineId,
+        },
+        data: {
+          ...existing,
+          aka: [...(existing.aka?.split(',') ?? ''), player.name].join(','),
+        },
+      })
+    }
+
     return client.player.upsert({
       where: {
         onlineId: player.onlineId,
