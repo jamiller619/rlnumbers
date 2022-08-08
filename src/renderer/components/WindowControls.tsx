@@ -6,17 +6,17 @@ import {
   VscChromeMinimize,
 } from 'react-icons/vsc'
 import styled from 'styled-components'
-import { Box } from '~/components/elements'
+import { Box } from '~/elements'
 import useWindowFocus from '~/hooks/useWindowFocus'
 
 const Container = styled(Box)<{ $focused: boolean }>`
   -webkit-app-region: drag;
   display: flex;
-  height: ${({ theme }) => theme.titlebarHeight};
+  height: ${({ theme }) => theme.titlebar.height}px;
   justify-content: end;
   font-size: 16px;
   color: ${({ $focused, theme }) =>
-    $focused ? 'currentColor' : theme.colors.surfaceSolidHover};
+    $focused ? 'currentColor' : theme.colors.surface.solidHover};
 `
 
 const StyledButton = styled(Box)`
@@ -32,12 +32,12 @@ const StyledButton = styled(Box)`
   }
 
   &:hover {
-    background: ${({ theme }) => theme.colors.surfaceBgHover};
-    color: ${({ theme }) => theme.colors.primaryBase};
+    background: ${({ theme }) => theme.colors.surface.bgHover};
+    color: ${({ theme }) => theme.colors.primary.base};
   }
 
   &:last-child:hover {
-    background: ${({ theme }) => theme.colors.dangerText};
+    background: ${({ theme }) => theme.colors.error.text};
   }
 `
 

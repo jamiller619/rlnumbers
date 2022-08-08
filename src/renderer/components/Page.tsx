@@ -1,6 +1,6 @@
 import { HTMLAttributes, ReactNode } from 'react'
 import styled from 'styled-components'
-import { Box, BoxProps } from '~/components/elements'
+import { Box, BoxProps } from '~/elements'
 
 type PageProps = Omit<HTMLAttributes<HTMLDivElement>, 'title'> &
   BoxProps & {

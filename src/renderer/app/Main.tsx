@@ -2,44 +2,39 @@ import { Fragment } from 'react'
 import { Outlet } from 'react-router-dom'
 import styled from 'styled-components'
 import { Menu, WindowControls } from '~/components'
-import { BlankSlate } from '~/features'
-import useConfig from '~/hooks/useConfig'
+import { Box } from '~/elements'
+
+const Container = styled(Box)`
+  display: flex;
+`
 
 const MainLayout = styled.div`
-  display: grid;
-  grid-template-areas: 'menu content';
-  grid-template-columns: 80px 1fr;
-  grid-column-gap: 0;
-  grid-row-gap: 5px;
+  display: flex;
   height: 100vh;
-  width: 100vw;
+  flex: 2;
 `
 
 const MainContent = styled.div`
-  grid-area: content;
-`
-
-const MainMenu = styled(Menu)`
-  grid-area: menu;
+  background-color: ${({ theme }) => theme.colors.surface.bgSubtle};
+  width: 100%;
+  margin-right: ${({ theme }) => theme.space.small};
+  margin-bottom: ${({ theme }) => theme.titlebar.height}px;
+  border-radius: ${({ theme }) => theme.radii.large}px;
+  border-top-left-radius: ${({ theme }) => theme.radii.large ?? 0 * 2}px;
 `
 
 export default function Main(): JSX.Element {
-  const { data, isLoading } = useConfig<string[] | null>('dirs')
-
   return (
     <Fragment>
       <WindowControls />
-      {!isLoading &&
-        (data == null || data.length === 0 ? (
-          <BlankSlate />
-        ) : (
-          <MainLayout>
-            <MainMenu />
-            <MainContent>
-              <Outlet />
-            </MainContent>
-          </MainLayout>
-        ))}
+      <Container>
+        <Menu />
+        <MainLayout>
+          <MainContent>
+            <Outlet />
+          </MainContent>
+        </MainLayout>
+      </Container>
     </Fragment>
   )
 }

@@ -28,7 +28,7 @@ const Navigation = styled.div`
 const StyledNavLink = styled(Link)<{ $active: boolean }>`
   border-width: 2px;
   border-style: solid;
-  color: ${({ theme }) => theme.colors.primaryBase};
+  color: ${({ theme }) => theme.colors.primary.base};
   cursor: pointer;
   border-color: transparent;
   border-radius: 0.75rem;
@@ -43,14 +43,14 @@ const StyledNavLink = styled(Link)<{ $active: boolean }>`
   ${({ $active }) =>
     $active
       ? css`
-          color: ${({ theme }) => theme.colors.accentSolid};
+          color: ${({ theme }) => theme.colors.accent.solid};
           cursor: unset;
-          border-color: ${({ theme }) => theme.colors.accentSolid};
+          border-color: ${({ theme }) => theme.colors.accent.solid};
         `
       : css`
           &:hover {
-            color: ${({ theme }) => theme.colors.surfaceText};
-            background: ${({ theme }) => theme.colors.surfaceBgHover};
+            color: ${({ theme }) => theme.colors.surface.text};
+            background: ${({ theme }) => theme.colors.surface.bgHover};
           }
         `}
 

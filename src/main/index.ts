@@ -1,18 +1,12 @@
 import { join } from 'node:path'
 import { versions } from 'node:process'
 import { BrowserWindow, app, dialog, ipcMain } from 'electron'
-import {
-  ConfigKey,
-  ConfigValue,
-  Progress,
-  Replay,
-  ReplayEntity,
-  Sort,
-} from '@shared/types'
+import { ConfigKey, Progress, Replay, ReplayEntity, Sort } from '@shared/types'
 import wait from '@shared/utils/wait'
 import { configService, isDev } from '~/config'
 import logger from '~/utils/logger'
 import { replayService, replayWatcher } from './replays'
+import { themeService } from './themes'
 
 logger.info('main', `Starting main process in ${isDev ? 'DEV' : 'PROD'} mode`)
 
@@ -75,12 +69,14 @@ const createWindow = () => {
   })
 
   ipcMain.handle('config:get', (_, key: ConfigKey) => {
-    return configService?.get(key)
+    return configService.get(key)
   })
 
-  ipcMain.handle('config:set', (_, key: ConfigKey, value: ConfigValue) => {
-    return configService?.set(key, value)
+  ipcMain.handle('config:set', <T>(_: unknown, key: ConfigKey, value: T) => {
+    return configService.set(key, value)
   })
+
+  ipcMain.handle('themes:get', () => themeService.get())
 
   ipcMain.handle(
     'replays:get',

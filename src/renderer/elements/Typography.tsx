@@ -42,6 +42,7 @@ type SC<T extends keyof JSX.IntrinsicElements | React.ComponentType<unknown>> =
   StyledComponent<T, DefaultTheme, Record<string, unknown>, never>
 
 const heading = css`
+  ${space}
   display: block;
   line-height: 1.3;
   font-weight: lighter;

@@ -1,11 +1,8 @@
 import 'styled-components'
-import { Colors } from '~/style/theme'
+import { BaseTheme, Colors } from '@shared/types'
 
 declare module 'styled-components' {
-  export interface DefaultTheme {
-    name: string
-    titlebarHeight: string
+  export interface DefaultTheme extends BaseTheme {
     colors: Colors
-    borderRadius: string
   }
 }

@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron'
-import { Config, ConfigKey, ConfigValue } from './types'
+import { ConfigKey, Theme } from './types'
 import { Intl, Paged, Replay, ReplayEntity, Sort } from './types'
 
 const { invoke } = ipcRenderer
@@ -32,11 +32,14 @@ const api = {
   },
 
   config: {
-    get: <T extends ConfigValue>(key: ConfigKey) =>
-      invoke('config:get', key) as Promise<T>,
-    set: (key: ConfigKey, value: ConfigValue): Promise<Config> => {
+    get: <T>(key: ConfigKey) => invoke('config:get', key) as Promise<T>,
+    set: <T>(key: ConfigKey, value: T): Promise<void> => {
       return invoke('config:set', key, value)
     },
+  },
+
+  themes: {
+    get: () => invoke('themes:get') as Promise<Theme>,
   },
 
   dialog: {

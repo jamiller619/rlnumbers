@@ -9,7 +9,7 @@ import { IconType } from 'react-icons/lib'
 import styled, { DefaultTheme, css } from 'styled-components'
 import { SpaceProps, space } from 'styled-system'
 
-type Variant = 'primary' | 'secondary'
+export type Variant = 'primary' | 'secondary'
 
 type ButtonProps = Omit<HTMLAttributes<HTMLButtonElement>, 'onClick'> &
   SpaceProps & {
@@ -21,19 +21,19 @@ type ButtonProps = Omit<HTMLAttributes<HTMLButtonElement>, 'onClick'> &
 
 const variants = (theme: DefaultTheme) => ({
   primary: css`
-    color: ${theme.colors.surfaceText};
-    background: ${theme.colors.surfaceBase};
+    color: ${theme.colors.surface.text};
+    background: ${theme.colors.surface.bgActive};
 
     &:hover {
-      background: ${theme.colors.surfaceBgSubtle};
+      background: ${theme.colors.surface.bgHover};
     }
   `,
   secondary: css`
-    color: ${theme.colors.surfaceText};
-    background: ${theme.colors.surfaceBgActive};
+    color: ${theme.colors.surface.text};
+    background: ${theme.colors.surface.bgHover};
 
     &:hover {
-      background: ${theme.colors.surfaceBgHover};
+      background: ${theme.colors.surface.bgActive};
     }
   `,
 })
@@ -42,18 +42,19 @@ const StyledButton = styled.button<ButtonProps>`
   ${space}
 
   ${({ theme, variant }) => variant && variants(theme)[variant ?? '']}
-
   display: block;
+  padding: ${({ theme }) => theme.space.medium};
   border: none;
-  padding: 1rem 1.3rem;
-  border-radius: ${({ theme }) => theme.borderRadius};
+  border-radius: ${({ theme }) => theme.radii.small}px;
   font-family: inherit;
   font-weight: 600;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  font-size: smaller;
-  transition-property: background color;
-  transition-duration: 0.1s;
+  font-size: 0.87rem;
+  transition-property: background, color;
+  transition-duration: 0.15s;
   transition-timing-function: ease-in-out;
+  cursor: pointer;
 
   &:disabled {
     cursor: not-allowed;
@@ -93,12 +94,9 @@ export default function Button({
   )
 }
 
-// eslint-disable-next-line react/display-name
-Button.Primary = (props: Omit<ButtonProps, 'variant'>) => {
+Button.Primary = function ButtonPrimary(props: Omit<ButtonProps, 'variant'>) {
   return <Button variant="primary" {...props} />
 }
-
-Button.Primary.displayName = 'Button.Primary'
 
 type IconButtonProps = ButtonProps & {
   icon: IconType

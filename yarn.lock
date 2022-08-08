@@ -1123,6 +1123,11 @@
   resolved "https://registry.yarnpkg.com/@tsconfig/node16/-/node16-1.0.3.tgz#472eaab5f15c1ffdd7f8628bd4c4f753995ec79e"
   integrity sha512-yOlFc+7UtL/89t2ZhjPvvB/DeAr3r+Dq58IgzsFkOAvVC6NMJXmCGjbptdXdR9qsX7pKcTL+s87FtYREi2dEEQ==
 
+"@types/app-root-dir@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@types/app-root-dir/-/app-root-dir-0.1.1.tgz#a7c95c0031b9d8aeb3d9c38b6126ad803d1fbdb4"
+  integrity sha512-N1r8cnF5dDWx3I/wPpSbSSAoMe2AGlPbifc7S8On8xrV0xCXUQuwjlRXIF/UuQV3y40x8/SKmCFSfuj40Xxz6Q==
+
 "@types/babel__core@^7.1.14":
   version "7.1.19"
   resolved "https://registry.yarnpkg.com/@types/babel__core/-/babel__core-7.1.19.tgz#7b497495b7d1b4812bdb9d02804d0576f43ee460"
@@ -1513,6 +1518,11 @@ anymatch@^3.0.3, anymatch@~3.1.2:
   dependencies:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
+
+app-root-dir@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/app-root-dir/-/app-root-dir-1.0.2.tgz#38187ec2dea7577fff033ffcb12172692ff6e118"
+  integrity sha512-jlpIfsOoNoafl92Sz//64uQHGSyMrD2vYG5d8o2a4qGvyNCvXur7bzIsWtAC/6flI2RYAp3kv8rsfBtaLm7w0g==
 
 archive-type@^4.0.0:
   version "4.0.0"

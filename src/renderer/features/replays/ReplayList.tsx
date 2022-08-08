@@ -1,6 +1,6 @@
 import { HTMLAttributes, useState } from 'react'
 import styled from 'styled-components'
-import { Player, Replay, Stats } from '@shared/types'
+import { Player, Replay, ReplayEntity, Sort, Stats } from '@shared/types'
 import useIntl from '~/hooks/useIntl'
 import useReplays from '~/hooks/useReplays'
 
@@ -8,10 +8,6 @@ export type Team = {
   color: 'orange' | 'blue'
   score: number
   players: Player[]
-}
-
-export type RecentMatchProps = HTMLAttributes<HTMLElement> & {
-  length?: number
 }
 
 type MatchProps = HTMLAttributes<HTMLElement> & {
@@ -106,15 +102,21 @@ const Match: React.FC<MatchProps> = ({ replay, ...props }) => {
   )
 }
 
-export default function RecentMatches({
+type ReplayListProps = HTMLAttributes<HTMLElement> & {
+  length?: number
+  sort?: Sort<ReplayEntity>
+}
+
+export default function ReplayList({
   length = 5,
+  sort = { prop: 'matchDate', order: 'desc' },
   ...props
-}: RecentMatchProps): JSX.Element {
+}: ReplayListProps): JSX.Element {
   const [page, setPage] = useState(0)
   const { replays, isLoading, error } = useReplays({
     page,
     take: length,
-    sort: { prop: 'matchDate', order: 'desc' },
+    sort,
   })
 
   return (

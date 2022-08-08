@@ -1,9 +1,12 @@
 import create, { SetState } from 'zustand'
-import { Progress } from '@shared/types'
+import { Progress, Theme } from '@shared/types'
 
 export type State = {
   import: Progress
   isWindowFocused: boolean
+  theme: Theme | null
+
+  setTheme: (themeName: string) => Promise<void>
 }
 
 type Set = SetState<State>
@@ -38,7 +41,9 @@ const handleImportComplete = (set: Set) => () => {
   })
 }
 
-const useStore = create((set: Set) => {
+const theme = (await window.api?.themes.get()) ?? null
+
+const useStore = create((set: Set): State => {
   window.api?.on('import:start', handleImportStart(set))
   window.api?.on('import:progress', handleImportProgress(set))
   window.api?.on('import:complete', handleImportComplete(set))
@@ -62,6 +67,19 @@ const useStore = create((set: Set) => {
       total: null,
       message: null,
       status: null,
+    },
+    theme,
+
+    setTheme: async (name: string) => {
+      await window.api?.config.set('theme.name', name)
+
+      const theme = await window.api?.themes.get()
+
+      if (theme != null) {
+        set({
+          theme,
+        })
+      }
     },
   }
 })

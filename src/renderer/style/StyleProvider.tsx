@@ -1,19 +1,14 @@
-import { Fragment, ReactNode, useMemo } from 'react'
-import {
-  StyleSheetManager,
-  ThemeProvider,
-  createGlobalStyle,
-} from 'styled-components'
+import { Fragment, ReactNode } from 'react'
+import { StyleSheetManager, createGlobalStyle } from 'styled-components'
 import reset from 'styled-reset'
-import { useDarkMode } from 'usehooks-ts'
-import { darkTheme, lightTheme } from './theme'
+import ThemeProvider from './ThemeProvider'
 
 const GlobalStyle = createGlobalStyle`
   ${reset}
 
   body {
-    background: ${({ theme }) => theme.colors.surfaceBase};
-    color: ${({ theme }) => theme.colors.primaryBase};
+    background: ${({ theme }) => theme.colors.surface.base};
+    color: ${({ theme }) => theme.colors.primary.base};
     font-family: 'SF Mono', 'Segoe UI', sans-serif;
     font-size: 18px;
     font-weight: 400;
@@ -26,9 +21,9 @@ const GlobalStyle = createGlobalStyle`
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: ${({ theme }) => theme.colors.primaryBg};
+    background-color: ${({ theme }) => theme.colors.primary.bg};
     border-radius: 6px;
-    border: 3px solid ${({ theme }) => theme.colors.surfaceBorder};
+    border: 3px solid ${({ theme }) => theme.colors.surface.border};
     transition: background-color 2s ease-out;
   }
 
@@ -42,14 +37,8 @@ export default function StyleProvider({
 }: {
   children: ReactNode
 }): JSX.Element {
-  const { isDarkMode } = useDarkMode()
-  const theme = useMemo(
-    () => (isDarkMode ? darkTheme : lightTheme),
-    [isDarkMode]
-  )
-
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider>
       <StyleSheetManager disableVendorPrefixes>
         <Fragment>
           <GlobalStyle />

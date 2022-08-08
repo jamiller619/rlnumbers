@@ -2,32 +2,37 @@ import { HTMLAttributes } from 'react'
 import { VscTrash } from 'react-icons/vsc'
 import styled from 'styled-components'
 import { SpaceProps, space } from 'styled-system'
-import { IconButton, Label, Text } from './elements'
+import { IconButton, Label } from '../elements'
 
-export type DataObject = {
+export type DataListItem = {
   [key: string | number]: unknown
   text: string
+  deletable?: boolean
 }
 
-type DatalistProps<T extends DataObject> = HTMLAttributes<HTMLUListElement> &
+type DatalistProps<T extends DataListItem> = HTMLAttributes<HTMLUListElement> &
   SpaceProps & {
     data: T[]
     onDelete: (item: T) => void
   }
 
-const ListItem = styled.li`
+const ListItem = styled.li.attrs({
+  p: 1,
+})`
+  ${space}
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: ${({ theme }) => theme.colors.surfaceBgSubtle};
-  border-bottom: 1px solid ${({ theme }) => theme.colors.surfaceBorder};
+  background: ${({ theme }) => theme.colors.surface.bgSubtle};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.surface.line};
 
   &:hover {
-    background: ${({ theme }) => theme.colors.surfaceBgHover};
+    background: ${({ theme }) => theme.colors.surface.bgHover};
   }
 
   &:active {
-    background: ${({ theme }) => theme.colors.surfaceBgActive};
+    background: ${({ theme }) => theme.colors.surface.bgActive};
   }
 
   > * {
@@ -39,11 +44,11 @@ const ListItem = styled.li`
     display: flex;
     border-radius: 0;
     background: none;
-    border-left: 1px solid ${({ theme }) => theme.colors.surfaceBorder};
+    border-left: 1px solid ${({ theme }) => theme.colors.surface.line};
   }
 
   ${Label} {
-    color: ${({ theme }) => theme.colors.surfaceText};
+    color: ${({ theme }) => theme.colors.surface.text};
     font-size: small;
   }
 `
@@ -52,9 +57,9 @@ const List = styled.ul`
   ${space}
   display: block;
   list-style: none;
-  border: 1px solid ${({ theme }) => theme.colors.surfaceBorder};
+  border: 1px solid ${({ theme }) => theme.colors.surface.line};
   border-bottom: 0;
-  border-radius: ${({ theme }) => theme.borderRadius};
+  border-radius: ${({ theme }) => theme.radii.medium};
 
   ${ListItem}:first-child {
     border-top-left-radius: inherit;
@@ -67,7 +72,7 @@ const List = styled.ul`
   }
 `
 
-export default function Datalist<T extends DataObject>({
+export default function Datalist<T extends DataListItem>({
   data,
   onDelete,
   ...props
@@ -78,7 +83,9 @@ export default function Datalist<T extends DataObject>({
         return (
           <ListItem key={item.text + i}>
             <Label>{item.text}</Label>
-            <IconButton icon={VscTrash} onClick={() => onDelete(item)} />
+            {item.deletable === false ? null : (
+              <IconButton icon={VscTrash} onClick={() => onDelete(item)} />
+            )}
           </ListItem>
         )
       })}

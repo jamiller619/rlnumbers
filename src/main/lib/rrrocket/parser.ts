@@ -1,44 +1,8 @@
-import { ExecOptions, exec as execSync } from 'node:child_process'
-import path from 'node:path'
-import process from 'node:process'
-import { promisify } from 'node:util'
+import type { ExecOptions } from 'node:child_process'
 import jq from 'node-jq'
-import logger from '~/utils/logger'
+import exec from '~/utils/exec'
+import { exe } from './loader'
 import type * as RRRocket from './types'
-
-const exec = promisify(execSync)
-
-const bins = {
-  win: 'rrrocket.exe',
-  mac: 'rrrocket-apple-darwin.tar',
-  linux: 'rrrocket-linux.tar',
-}
-
-const getBin = () => {
-  switch (process.platform) {
-    case 'darwin':
-      return bins.mac
-
-    case 'linux':
-      return bins.linux
-
-    default:
-      return bins.win
-  }
-}
-
-const exe = path.resolve(__dirname, './bin', getBin())
-
-const getVersion = async () => {
-  const { stdout } = await exec(`${exe} --version`)
-
-  logger.info(
-    'rrrocket',
-    `Using rrrocket v${stdout.replace('rrrocket', '').trim()}`
-  )
-}
-
-getVersion()
 
 const batch = function* <T>(items: T[], size: number) {
   for (let i = 0; i < items.length; i += size) {

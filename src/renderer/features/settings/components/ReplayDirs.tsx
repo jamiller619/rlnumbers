@@ -1,15 +1,32 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import Datalist from '~/components/DataList'
-import { Box, BoxProps, Button, FlexSpread, Label } from '~/components/elements'
-import useConfig from '~/hooks/useConfig'
+import styled from 'styled-components'
+import { Control } from '~/components'
+import Datalist, { DataListItem } from '~/components/DataList'
+import { Box, BoxProps, Button } from '~/elements'
 
-export default function ReplayDirs(props: BoxProps) {
-  const { data, mutate, isLoading } = useConfig<string[]>('dirs')
+type ReplayDirsProps = Omit<BoxProps, 'data' | 'onChange'> & {
+  data?: string[] | null
+  onChange?: (data: string[]) => void
+}
+
+const ButtonGroup = styled(Box)`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 3rem;
+`
+
+export default function ReplayDirs({ data, onChange }: ReplayDirsProps) {
   const dirs = useMemo(() => data ?? [], [data])
-  const datalistData = useMemo(
-    () => dirs.map((d) => ({ text: d, value: d })),
-    [dirs]
-  )
+  const datalistData = useMemo<DataListItem[]>(() => {
+    if (dirs.length > 0) {
+      return dirs.map((d) => ({ text: d, value: d }))
+    }
+
+    return [
+      { text: 'No replay directories selected', value: '', deletable: false },
+    ]
+  }, [dirs])
   const [defaultDir, setDefaultDir] = useState<string | null>(null)
 
   useEffect(() => {
@@ -24,50 +41,48 @@ export default function ReplayDirs(props: BoxProps) {
   )
 
   const addDir = useCallback(
-    async (dir: string) => {
+    (dir: string) => {
       if (!dirs.includes(dir)) {
-        mutate([dir, ...dirs])
+        onChange?.([dir, ...dirs])
       }
     },
-    [dirs, mutate]
+    [dirs, onChange]
   )
 
   const removeDir = useCallback(
     async (dir: string) => {
-      mutate(dirs.filter((d) => d !== dir))
+      onChange?.(dirs.filter((d) => d !== dir))
     },
-    [dirs, mutate]
+    [dirs, onChange]
   )
 
   const handleChooseDir = useCallback(async () => {
     const chosen = (await window.api?.dialog.openDirectory()) ?? []
 
-    for await (const dir of chosen) {
-      await addDir(dir)
+    for (const dir of chosen) {
+      addDir(dir)
     }
   }, [addDir])
 
-  const handleAddDefaultDir = useCallback(async () => {
+  const handleAddDefaultDir = useCallback(() => {
     if (defaultDir != null) {
-      await addDir(defaultDir)
+      addDir(defaultDir)
     }
   }, [defaultDir, addDir])
 
   return (
-    <Box {...props}>
-      {isLoading && <Label>Loading...</Label>}
-      <Label mb={3}>Replay directories:</Label>
+    <Control label="Replay directories:">
       <Datalist
         mt={2}
         data={datalistData}
         onDelete={({ text }) => removeDir(text)}
       />
-      <FlexSpread mt={4}>
+      <ButtonGroup mt={4}>
         <Button onClick={handleChooseDir}>Add replay directory</Button>
         {!includesDefaultDir && (
           <Button onClick={handleAddDefaultDir}>Add default directory</Button>
         )}
-      </FlexSpread>
-    </Box>
+      </ButtonGroup>
+    </Control>
   )
 }

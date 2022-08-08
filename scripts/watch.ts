@@ -1,5 +1,6 @@
 import { ChildProcess, spawn } from 'node:child_process'
 import { AddressInfo } from 'node:net'
+import os from 'node:os'
 import electron from 'electron'
 import { build, createServer } from 'vite'
 
@@ -15,7 +16,7 @@ const env = Object.assign(process.env, {
   DEV_SERVER_PORT: (server.httpServer?.address() as AddressInfo).port,
 })
 
-const startElectron = {
+const restartElectron = {
   name: 'electron-main-watcher',
   writeBundle() {
     electronProcess && electronProcess.kill()
@@ -36,10 +37,16 @@ const opts = {
 await build({
   ...opts,
   configFile: 'src/main/vite.config.ts',
-  plugins: [startElectron],
+  plugins: [restartElectron],
 })
 
 await build({
   ...opts,
   configFile: 'src/preload/vite.config.ts',
+})
+
+const cmd = os.platform() === 'win32' ? 'yarn.cmd' : 'yarn'
+
+spawn(cmd, ['theme:build', '--watch'], {
+  stdio: 'inherit',
 })

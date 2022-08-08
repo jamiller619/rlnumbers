@@ -1,37 +1,35 @@
 import useSWR from 'swr'
-import { Config, ConfigValue } from '@shared/types'
+import { ConfigKey } from '@shared/types'
 
-const fetcher = (key: keyof Config) => {
+const fetcher = (key: ConfigKey) => {
   return window.api?.config.get(key)
 }
 
-export default function useConfig<T extends ConfigValue>(key: keyof Config) {
+export default function useConfig<T>(key: ConfigKey) {
   const {
     data,
     isValidating: isLoading,
     error,
     mutate,
   } = useSWR(key, fetcher, {
-    // revalidateIfStale: false,
-    // revalidateOnFocus: false,
-    // revalidateOnReconnect: false,
+    revalidateIfStale: false,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
   })
 
   return {
     data,
     isLoading,
     error,
-    mutate: async (value: ConfigValue) => {
-      const result = await window.api?.config.set(key, value)
+    mutate: async (value: T) => {
+      await window.api?.config.set(key, value)
 
-      if (result != null) {
-        return mutate(result[key])
-      }
+      return mutate(value)
     },
   } as {
     data: T | null
     isLoading: boolean
     error: unknown
-    mutate: (value: ConfigValue) => void
+    mutate(value: T): Promise<void>
   }
 }

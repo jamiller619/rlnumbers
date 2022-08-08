@@ -15,10 +15,13 @@
     "db:push": "yarn prisma db push --schema=./src/main/db/schema.prisma",
     "copy": "run-p copy:*",
     "copy:rrrocket": "node --loader ts-node/esm scripts/copy.ts ./src/main/lib/rrrocket/bin ./dist/bin",
-    "copy:intl": "node --loader ts-node/esm scripts/copy.ts ./src/main/intl/locales ./dist/locales"
+    "copy:intl": "node --loader ts-node/esm scripts/copy.ts ./src/main/intl/locales ./dist/locales",
+    "theme:build": "node --loader ts-node/esm --experimental-json-modules scripts/themes/build.ts"
   },
   "devDependencies": {
+    "@radix-ui/colors": "^0.1.8",
     "@trivago/prettier-plugin-sort-imports": "^3.2.0",
+    "@types/app-root-dir": "^0.1.1",
     "@types/jest": "^28.1.6",
     "@types/klaw": "^3.0.3",
     "@types/node": "^17.0.21",
@@ -52,7 +55,7 @@
   },
   "dependencies": {
     "@prisma/client": "^3.14.0",
-    "@radix-ui/colors": "^0.1.8",
+    "app-root-dir": "^1.0.2",
     "chokidar": "^3.5.3",
     "dotenv": "^16.0.1",
     "electron": "^18.2.3",
