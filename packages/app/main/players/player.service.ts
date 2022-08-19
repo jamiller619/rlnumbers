@@ -1,4 +1,4 @@
-import connect from '@rln/shared/db/connect'
+import { connect } from '@rln/shared/db'
 import type { PlayerDTO, Stats, StatsDTO } from '@rln/shared/types'
 
 const client = connect()

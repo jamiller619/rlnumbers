@@ -1,4 +1,4 @@
-import connect from '@rln/shared/db/connect'
+import { connect } from '@rln/shared/db'
 
 export type UnknownValueType = 'platform' | 'map' | 'playlist' | 'rank'
 

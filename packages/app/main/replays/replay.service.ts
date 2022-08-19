@@ -1,6 +1,6 @@
 import EventEmitter from 'node:events'
 import { ReplayFileCount } from '@rln/shared/api'
-import connect from '@rln/shared/db/connect'
+import { connect } from '@rln/shared/db'
 import {
   Paged,
   Player,
