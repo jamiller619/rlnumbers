@@ -7,7 +7,7 @@ import { build, createServer } from 'vite'
 let electronProcess: ChildProcess | null = null
 
 const server = await createServer({
-  configFile: 'src/renderer/vite.config.ts',
+  configFile: 'packages/app/renderer/vite.config.ts',
 })
 
 await server.listen()
@@ -36,13 +36,13 @@ const opts = {
 
 await build({
   ...opts,
-  configFile: 'src/main/vite.config.ts',
+  configFile: 'packages/app/main/vite.config.ts',
   plugins: [restartElectron],
 })
 
 await build({
   ...opts,
-  configFile: 'src/preload/vite.config.ts',
+  configFile: 'packages/app/preload/vite.config.ts',
 })
 
 const cmd = os.platform() === 'win32' ? 'yarn.cmd' : 'yarn'

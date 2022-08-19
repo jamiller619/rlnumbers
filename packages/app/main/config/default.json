@@ -1,0 +1,10 @@
+{
+  "dirs": [],
+  "rrrocketVersion": "0.9.3",
+  "theme": {
+    "name": "system.default",
+    "colors": {
+      "mode": "auto"
+    }
+  }
+}

@@ -13,15 +13,18 @@ if (watch === true) {
   console.log(chalk.blueBright(`Theme build running in watch mode`))
 }
 
-const src = path.resolve(process.cwd(), 'src/renderer/style/themes/system')
-const dest = path.resolve(process.cwd(), 'dist/themes/system')
+const src = path.resolve(
+  process.cwd(),
+  'packages/app/renderer/style/themes/system'
+)
+const dest = path.resolve(process.cwd(), 'dist/app/theme')
 
 await fs.mkdir(src, { recursive: true })
 await fs.mkdir(dest, { recursive: true })
 
 const file = (dir: string) => `${dir}/default.json`
 
-const themeReducer = (
+const themeEntriesReducer = (
   theme: DefaultTheme,
   [key, value]: [string | number, unknown]
 ) => {
@@ -41,7 +44,7 @@ const themeReducer = (
 const build = async () => {
   const defaultTheme = (await import('./defaultTheme.json')).default
   const themeWithScale = Object.entries(defaultTheme).reduce(
-    themeReducer,
+    themeEntriesReducer,
     {} as DefaultTheme
   )
 

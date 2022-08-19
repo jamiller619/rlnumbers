@@ -1,20 +1,22 @@
 import chalk from 'chalk'
 import { build } from 'vite'
 
-console.log(`\n\nBuilding: ${chalk.bold.blueBright('Preload')}\n`)
-await build({
-  configFile: 'src/preload/vite.config.ts',
-})
+const buildMsg = (app: string) => {
+  return `\n${chalk.dim('Building:')} ${chalk.bold.blueBright(
+    `electron ${app}`
+  )}\n`
+}
 
-console.log(`\n\nBuilding: ${chalk.bold.blueBright('Main')}\n`)
-await build({
-  configFile: 'src/main/vite.config.ts',
-})
+const buildApp = async (app: string) => {
+  console.log(buildMsg(app))
+  await build({
+    configFile: `packages/app/${app}/vite.config.ts`,
+  })
+}
 
-console.log(`\n\nBuilding: ${chalk.bold.blueBright('Renderer')}\n`)
-await build({
-  configFile: 'src/renderer/vite.config.ts',
-})
+for (const app of ['main', 'renderer', 'preload']) {
+  await buildApp(app)
+}
 
 console.log(`\n${chalk.bold.greenBright('Build Complete!')}\n`)
 

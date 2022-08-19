@@ -5,11 +5,17 @@
     "heading": "system-ui, sans-serif",
     "monospace": "'SF Mono', monospace"
   },
+  "fontSizes": [12, 14, 16, 20, 24, 32, 48],
+  "fontWeights": {
+    "body": 400,
+    "heading": 500,
+    "bold": 700
+  },
   "lineHeights": {
     "body": 1.5,
     "heading": 1.125
   },
-  "radii": [1, 3, 5],
+  "radii": [2, 4, 8, 10, 12],
   "space": [0, "0.25rem", "0.5rem", "1rem", "2rem", "4rem", "8rem"],
   "titlebar": {
     "height": 40

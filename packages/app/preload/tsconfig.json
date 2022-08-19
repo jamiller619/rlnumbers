@@ -1,0 +1,10 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@rln/shared/*": ["../../shared/*"]
+    }
+  },
+  "include": ["**/*.ts", "../package.json"],
+  "exclude": ["vite.config.ts"]
+}

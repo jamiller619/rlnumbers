@@ -1,0 +1,92 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./rlnumbers.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model ImportQueue {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  path      String
+}
+
+model Replay {
+  id               Int           @id @default(autoincrement())
+  createdAt        DateTime
+  path             String?       @unique
+  name             String
+  hash             String        @unique
+  matchDate        DateTime?
+  matchLength      Int?
+  map              String?
+  playlist         Int?
+  ranked           Boolean?
+  season           Int? // 1-14 = old seasons, 15+ = free-to-play seasons
+  wasNetworkParsed Boolean       @default(false)
+  owner            Player?       @relation(fields: [ownerId], references: [id])
+  ownerId          Int?
+  stats            Stats[]
+  camSettings      CamSettings[]
+
+  @@map("replays")
+}
+
+model Player {
+  id          Int           @id @default(autoincrement())
+  createdAt   DateTime
+  onlineId    String?       @unique
+  platform    Int?
+  name        String
+  aka         String? // String array
+  stats       Stats[]
+  camSettings CamSettings[]
+  replay      Replay[]
+
+  @@map("players")
+}
+
+model Stats {
+  id       Int    @id @default(autoincrement())
+  assists  Int?
+  demos    Int?
+  goals    Int?
+  saves    Int?
+  score    Int?
+  shots    Int?
+  team     Int?
+  mmr      Int?
+  player   Player @relation(fields: [playerId], references: [id])
+  playerId Int
+  replay   Replay @relation(fields: [replayId], references: [id])
+  replayId Int
+
+  @@map("stats")
+}
+
+model CamSettings {
+  id         Int      @id @default(autoincrement())
+  player     Player   @relation(fields: [playerId], references: [id])
+  playerId   Int
+  replay     Replay   @relation(fields: [replayId], references: [id])
+  replayId   Int
+  transition Decimal?
+  angle      Decimal?
+  distance   Decimal?
+  fov        Decimal?
+  height     Decimal?
+  swivel     Decimal?
+  stiffness  Decimal?
+
+  @@map("cam_settings")
+}
+
+model UnknownValue {
+  id    Int    @id @default(autoincrement())
+  type  String
+  value String
+
+  @@map("unknown_values")
+}

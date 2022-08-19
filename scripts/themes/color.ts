@@ -17,7 +17,10 @@
  *  12 High-contrast text
  */
 import * as colors from '@radix-ui/colors'
-import Colors, { ColorRole, colorSteps } from '../../src/shared/types/Colors.js'
+import Colors, {
+  ColorRole,
+  colorSteps,
+} from '../../packages/shared/types/Colors.js'
 
 const createScale = (data: Record<string, string>, role: ColorRole) => {
   const scale = {} as Record<string, string>
@@ -44,22 +47,24 @@ type ColorMap = {
   color: Record<string, string>
 }
 
+const { crimson, green, yellow, blue, red, mauve, mauveDark } = colors
+
 export const shared: ColorMap[] = [
-  { name: 'accent', color: colors.crimson },
-  { name: 'success', color: colors.green },
-  { name: 'warning', color: colors.yellow },
-  { name: 'error', color: colors.red },
-  { name: 'info', color: colors.blue },
+  { name: 'accent', color: crimson },
+  { name: 'success', color: green },
+  { name: 'warning', color: yellow },
+  { name: 'error', color: red },
+  { name: 'info', color: blue },
 ]
 
 export const light: ColorMap[] = [
-  { name: 'primary', color: colors.mauveDark },
-  { name: 'surface', color: colors.mauve },
+  { name: 'primary', color: mauveDark },
+  { name: 'surface', color: mauve },
 ]
 
 export const dark: ColorMap[] = [
-  { name: 'primary', color: colors.mauve },
-  { name: 'surface', color: colors.mauveDark },
+  { name: 'primary', color: mauve },
+  { name: 'surface', color: mauveDark },
 ]
 
 const createTheme = (colors: ColorMap[]) => {

@@ -1,0 +1,17 @@
+{
+  "name": "@rln/shared",
+  "version": "1.0.0",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/app-root-dir": "^0.1.1",
+    "@types/klaw": "^3.0.3",
+    "prisma": "^3.14.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^3.14.0",
+    "klaw": "^4.0.1",
+    "winston": "^3.7.2"
+  }
+}
