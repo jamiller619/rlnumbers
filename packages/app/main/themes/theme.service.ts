@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import logger from '@rln/shared/logger'
 import { Theme } from '@rln/shared/types'
 import { configService } from '~/config'
-import logger from '~/logger'
 
 const root = path.resolve('dist/themes')
 

@@ -1,14 +1,13 @@
 {
   "name": "@rln/svc",
   "version": "1.0.0",
-  "main": "index.js",
   "license": "MIT",
   "type": "module",
   "private": true,
-  "scripts": {
-    "dx": "yarn clean && yarn copy && NODE_ENV=development node --loader ts-node/esm scripts/watch.ts",
-    "test": "jest",
-    "build": "yarn clean && yarn copy && node --loader ts-node/esm scripts/build.ts",
-    "clean": "rimraf dist/{*.cjs,*.map,*.html,assets}"
+  "dependencies": {
+    "node-windows": "^1.0.0-beta.8"
+  },
+  "devDependencies": {
+    "@types/node-windows": "^0.1.2"
   }
 }

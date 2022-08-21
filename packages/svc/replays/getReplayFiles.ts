@@ -1,5 +1,5 @@
 import klaw from 'klaw'
-import logger from '../logger'
+import logger from '@rln/shared/logger'
 
 const ext = '.replay'
 

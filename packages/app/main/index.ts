@@ -1,6 +1,8 @@
 import { join } from 'node:path'
 import { versions } from 'node:process'
 import { BrowserWindow, app, dialog, ipcMain } from 'electron'
+import { ConfigService, ReplayService } from '@rln/api/services'
+import logger from '@rln/shared/logger'
 import {
   ConfigKey,
   Progress,
@@ -9,9 +11,7 @@ import {
   Sort,
 } from '@rln/shared/types'
 import wait from '@rln/shared/utils/wait'
-import { configService, isDev } from '~/config'
-import logger from '~/logger'
-import { replayService, replayWatcher } from './replays'
+import { isDev } from '~/config'
 import { themeService } from './themes'
 
 logger.info('main', `Starting main process in ${isDev ? 'DEV' : 'PROD'} mode`)
@@ -24,6 +24,8 @@ if (isDev) {
 }
 
 let mainWindow: BrowserWindow | null = null
+const configService = new ConfigService()
+const replayService = new ReplayService()
 
 const createWindow = () => {
   logger.info('main', 'Main window created')
@@ -100,14 +102,14 @@ const createWindow = () => {
     return replayService.getDefaultDirectory()
   })
 
-  ipcMain.handle(
-    'replays:countDirectory',
-    async (_: unknown, ...dirs: string[]) => {
-      for await (const count of replayService.countReplayFiles(...dirs)) {
-        mainWindow?.webContents.send('replay:count', count)
-      }
-    }
-  )
+  // ipcMain.handle(
+  //   'replays:countDirectory',
+  //   async (_: unknown, ...dirs: string[]) => {
+  //     for await (const count of replayService.countReplayFiles(...dirs)) {
+  //       mainWindow?.webContents.send('replay:count', count)
+  //     }
+  //   }
+  // )
 
   ipcMain.handle('intl:get', async () => {
     const { intlService } = await import('~/intl')

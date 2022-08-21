@@ -23,8 +23,8 @@
     "theme:build": "node --loader ts-node/esm --experimental-json-modules scripts/themes/build.ts",
     "db": "run-s db:*",
     "db:clean": "rimraf ./packages/shared/db/rlnumbers.db",
-    "db:gen": "yarn prisma generate --schema=./packages/shared/db/schema.prisma",
-    "db:push": "yarn prisma db push --schema=./packages/shared/db/schema.prisma"
+    "db:gen": "yarn prisma generate --schema=./packages/api/db/schema.prisma",
+    "db:push": "yarn prisma db push --schema=./packages/api/db/schema.prisma"
   },
   "devDependencies": {
     "@radix-ui/colors": "^0.1.8",

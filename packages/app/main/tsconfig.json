@@ -3,7 +3,8 @@
   "compilerOptions": {
     "paths": {
       "~/*": ["./*"],
-      "@rln/shared/*": ["../../shared/*"]
+      "@rln/shared/*": ["../../shared/*"],
+      "@rln/api/*": ["../../api/*"]
     }
   },
   "include": ["**/*.ts", "../package.json"],

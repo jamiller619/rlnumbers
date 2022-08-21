@@ -6,7 +6,7 @@
   "importOrder": [
     "^node:(.*)$",
     "<THIRD_PARTY_MODULES>",
-    "^@rln/shared/(.*)$",
+    "^@rln/(.*)$",
     "^~/(.*)$",
     "^[./]"
   ],

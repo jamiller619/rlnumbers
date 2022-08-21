@@ -1,8 +1,8 @@
 import path from 'node:path'
 import type { FSWatcher } from 'chokidar'
+import logger from '@rln/shared/logger'
 import { Config } from '@rln/shared/types'
 import { configService } from '~/config'
-import logger from '~/logger'
 
 let watcher: FSWatcher | null = null
 

@@ -1,6 +1,6 @@
 import path from 'node:path'
 import appRoot from 'app-root-dir'
-import logger from '~/logger'
+import logger from '@rln/shared/logger'
 import exec from '~/utils/exec'
 
 const root = appRoot.get()

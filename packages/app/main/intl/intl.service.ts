@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { osLocale } from 'os-locale'
+import logger from '@rln/shared/logger'
 import { Intl } from '@rln/shared/types'
-import logger from '~/logger'
 
 let intl: Intl | null = null
 const root = path.resolve('./dist/locales')
