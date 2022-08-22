@@ -7,5 +7,6 @@
       "@rln/api/*": ["../api/*"]
     }
   },
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts"],
+  "exclude": ["vite.config.ts"]
 }

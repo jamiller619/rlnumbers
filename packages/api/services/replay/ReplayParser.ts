@@ -1,6 +1,6 @@
 import path from 'node:path'
 import { Platform, Playlist } from '@rln/shared/enums'
-import { RRRocket } from '@rln/shared/lib/rrrocket'
+import { RRRocket } from '@rln/shared/lib'
 import logger from '@rln/shared/logger'
 import { PlayerDTO, ReplayDTO, StatsDTO } from '@rln/shared/types'
 import { isValidDate } from '@rln/shared/utils/date'

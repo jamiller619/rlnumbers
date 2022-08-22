@@ -10,7 +10,7 @@ generator client {
 model ImportQueue {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
-  path      String
+  path      String   @unique
 
   @@map("import_queue")
 }

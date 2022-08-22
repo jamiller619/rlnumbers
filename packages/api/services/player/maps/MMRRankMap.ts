@@ -1,4 +1,4 @@
-import { CompetitivePlaylist, Playlist, Rank } from '../enums'
+import { CompetitivePlaylist, Playlist, Rank } from '@rln/shared/enums'
 
 type RanksWithDivisions = Exclude<Rank, Rank.SSL>
 

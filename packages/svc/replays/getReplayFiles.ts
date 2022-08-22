@@ -1,24 +1,13 @@
-import klaw from 'klaw'
-import logger from '@rln/shared/logger'
+import readdir from 'readdirp'
+import isReplay from './isReplay'
 
-const ext = '.replay'
-
-const isReplay = (file: string) => file.endsWith(ext)
-
-export default async function* getReplayFiles(dir?: string | null) {
+export default async function getReplayFiles(dir?: string | null) {
   if (dir != null) {
-    try {
-      for await (const file of klaw(dir)) {
-        if (isReplay(file.path)) {
-          yield file.path
-        }
-      }
-    } catch (err) {
-      logger.error(
-        'replay.getReplayFiles',
-        `Unable to get replay files in "${dir}"`,
-        err
-      )
-    }
+    const entries = await readdir.promise(dir, {
+      alwaysStat: false,
+      fileFilter: (entry) => isReplay(entry.path),
+    })
+
+    return entries.map((e) => e.fullPath)
   }
 }

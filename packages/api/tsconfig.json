@@ -6,5 +6,6 @@
       "@rln/shared/*": ["../shared/*"]
     }
   },
-  "include": ["**/*.ts", "../app/main/config.ts"]
+  "include": ["**/*.ts"],
+  "exclude": ["vite.config.ts"]
 }

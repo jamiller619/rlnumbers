@@ -1,90 +1,63 @@
 import path from 'node:path'
 import type { FSWatcher } from 'chokidar'
 import * as chokidar from 'chokidar'
-import wincmd from 'node-windows'
-import { ConfigService, ReplayService } from '@rln/api/services'
+import { ImportQueueService } from '@rln/api/services'
 import logger from '@rln/shared/logger'
-import { Config } from '@rln/shared/types'
+import getReplayFiles from './getReplayFiles'
+import isReplay from './isReplay'
 
 let watcher: FSWatcher | null = null
-const configService = new ConfigService()
-const replayService = new ReplayService()
+const importQueueService = new ImportQueueService()
 
-wincmd.list((svc) => {}, true)
+const stop = async () => {
+  if (watcher) {
+    logger.info('replay.watcher', 'Closing watcher...')
 
-// const watch = async (...dirs: string[]) => {
-//   if (dirs.length < 1) {
-//     throw new Error('No directories specified to watch')
-//   }
+    await watcher.close()
+    watcher = null
 
-//   // const { default: chokidar } = await import('chokidar')
-//   // const replayService = await import('~/replays/replay.service')
+    logger.info('replay.watcher', 'Closed watcher')
+  }
+}
 
-//   await stop()
+export default async function watch(...dirs: string[]) {
+  await stop()
 
-//   const paths = dirs.map((dir) => path.normalize(`${dir}/**/*.replay`))
+  const paths = dirs.map((dir) => path.normalize(`${dir}/**/*.replay`))
 
-//   try {
-//     watcher = chokidar.watch(paths, {
-//       ignoreInitial: true,
-//     })
+  try {
+    watcher = chokidar.watch(paths, {
+      ignoreInitial: true,
+    })
 
-//     watcher.on('ready', async () => {
-//       const files = []
+    watcher.on('ready', async () => {
+      for await (const dir of dirs) {
+        const files = await getReplayFiles(dir)
 
-//       // for await (const file of replayService.getReplayFiles(...dirs)) {
-//       //   files.push(file)
-//       // }
+        if (files && files.length > 0) {
+          await importQueueService.add(...files)
+        }
+      }
+    })
 
-//       // await replayService.importReplays(...files)
-//     })
+    watcher.on('add', async (file) => {
+      if (isReplay(file)) {
+        await importQueueService.add(file)
+      }
+    })
 
-//     watcher.on('add', async (file) => {
-//       if (replayService.isReplay(file)) {
-//         await replayService.importReplays(file)
-//       }
-//     })
+    watcher.on('unlink', async (file) => {
+      if (isReplay(file)) {
+        await importQueueService.remove(file)
+      }
+    })
 
-//     watcher.on('unlink', async (file) => {
-//       if (replayService.isReplay(file)) {
-//         await replayService.deleteReplay(file)
-//       }
-//     })
+    watcher.on('error', (err) =>
+      logger.error('replay.watcher', `Error event fired`, err)
+    )
 
-//     watcher.on('error', (err) =>
-//       logger.error('replay.watcher', `Error event fired`, err)
-//     )
-
-//     logger.info('replay.watcher', 'Watching for new replays...')
-//   } catch (err) {
-//     logger.error('replay.watcher', 'Unknown error', err)
-//   }
-// }
-
-// export const stop = async () => {
-//   if (watcher != null) {
-//     logger.info('replay.watcher', 'Closing watcher...')
-
-//     await watcher.close()
-
-//     logger.info('replay.watcher', 'Watcher closed')
-//   }
-
-//   watcher = null
-// }
-
-// export const start = () => {
-//   const config = configService.getConfig()
-
-//   configService.on('change', (newConfig: Config) => {
-//     if (newConfig.dirs && newConfig.dirs.length > 0) {
-//       watch(...newConfig.dirs)
-//     }
-//   })
-
-//   if (!config.dirs || config.dirs.length === 0) {
-//     logger.info('main', 'No replay directories configured.')
-//   } else {
-//     watch(...config.dirs)
-//   }
-// }
+    logger.info('replay.watcher', 'Watching for new replays...')
+  } catch (err) {
+    logger.error('replay.watcher', 'Unknown error', err)
+  }
+}

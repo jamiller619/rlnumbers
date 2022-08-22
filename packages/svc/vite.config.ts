@@ -1,9 +1,9 @@
 import { UserConfig } from 'vite'
-import merge, { getNodeVersion } from '@rln/shared/vite.config'
-import pkg from './package.json'
+import pkg from '../app/package.json'
+import merge, { dirname, getNodeVersion } from '../shared/vite.config.js'
 
 const config: UserConfig = {
-  root: __dirname,
+  root: dirname(import.meta.url),
   build: {
     target: getNodeVersion(pkg),
     lib: {

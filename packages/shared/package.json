@@ -4,11 +4,7 @@
   "license": "MIT",
   "type": "module",
   "private": true,
-  "devDependencies": {
-    "@types/klaw": "^3.0.3"
-  },
   "dependencies": {
-    "klaw": "^4.0.1",
     "winston": "^3.7.2"
   }
 }

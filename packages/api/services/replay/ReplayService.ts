@@ -1,4 +1,4 @@
-import { RRRocket } from '@rln/shared/lib/rrrocket'
+import { RRRocket } from '@rln/shared/lib'
 import logger from '@rln/shared/logger'
 import {
   Paged,

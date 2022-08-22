@@ -1,14 +1,20 @@
 import chalk from 'chalk'
 import { build } from 'vite'
 
-const buildMsg = (app: string) => {
+const buildMsg = (app: string, isElectronApp = true) => {
   return `\n${chalk.dim('Building:')} ${chalk.bold.blueBright(
-    `electron ${app}`
+    `${isElectronApp ? 'electron' : ''} ${app}`
   )}\n`
 }
 
+console.log(buildMsg('api', false))
+
+await build({
+  configFile: `packages/api/vite.config.ts`,
+})
+
 const buildApp = async (app: string) => {
-  console.log(buildMsg(app))
+  console.log(buildMsg(app, true))
   await build({
     configFile: `packages/app/${app}/vite.config.ts`,
   })
@@ -17,6 +23,12 @@ const buildApp = async (app: string) => {
 for (const app of ['main', 'renderer', 'preload']) {
   await buildApp(app)
 }
+
+console.log(buildMsg('svc', false))
+
+await build({
+  configFile: `packages/svc/vite.config.ts`,
+})
 
 console.log(`\n${chalk.bold.greenBright('Build Complete!')}\n`)
 
