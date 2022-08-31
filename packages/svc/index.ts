@@ -1,14 +1,23 @@
 import logger from 'logger'
 import { Service } from 'node-windows'
-import { replayWatcher } from './replays'
+import ConfigService from '@rln/api/services/config/ConfigService.js'
+import type { DirConfig } from '@rln/shared/types'
+import replayWatcher from './replays/watcher.js'
 
 type Action = 'start' | 'stop' | 'install' | 'uninstall'
 
-if (process.argv?.[2] == null) {
-  throw new Error('Missing required action param!')
+const action = process.argv?.[2] as Action
+
+if (action == null) {
+  throw new Error('Missing required action!')
 }
 
-const action = process.argv[2] as Action
+const configService = new ConfigService()
+const filterDirs = (dirs: DirConfig[]) => {
+  return dirs.filter((dir) => dir.watch === true).map((dir) => dir.path)
+}
+
+const dirs = filterDirs(configService.get('dirs'))
 
 const svc = new Service({
   name: 'RLN Replay Watcher',
@@ -17,34 +26,52 @@ const svc = new Service({
 })
 
 svc.on('install', () => {
-  replayWatcher.start()
+  replayWatcher.start(...dirs)
 
-  logger.info('watch.svc', 'Replay watch service installed successfully')
+  logger.info('replay.service', 'Replay watch service installed successfully')
 })
 
 svc.on('uninstall', () => {
   replayWatcher.stop()
 
-  logger.info('watch.svc', 'Replay Watcher service uninstalled successfully')
+  logger.info(
+    'replay.service',
+    'Replay Watcher service uninstalled successfully'
+  )
 })
+
+configService.on('change', (newConfig) => {
+  replayWatcher.start(...filterDirs(newConfig.dirs))
+})
+
+let actionText = ''
 
 switch (action) {
   case 'install':
     svc.install()
+    actionText = 'installed'
     break
 
   case 'start':
-    replayWatcher.start()
+    await replayWatcher.start(...dirs)
+    actionText = 'started'
     break
 
   case 'stop':
-    replayWatcher.stop()
+    await replayWatcher.stop()
+    actionText = 'stopped'
     break
 
   case 'uninstall':
     svc.uninstall()
+    actionText = 'uninstalled'
     break
 
   default:
     throw new Error(`Invalid action "${action}"`)
 }
+
+// keep alive!
+await new Promise(() =>
+  logger.info('replay.service', `Successfully ${actionText} the watch service!`)
+)

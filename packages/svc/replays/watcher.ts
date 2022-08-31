@@ -11,17 +11,26 @@ const importQueueService = new ImportQueueService()
 
 export const stop = async () => {
   if (watcher) {
-    logger.info('replay.watcher', 'Closing watcher...')
+    logger.info('replay.service', 'Closing watcher...')
 
     await watcher.close()
     watcher = null
 
-    logger.info('replay.watcher', 'Closed watcher')
+    logger.info('replay.service', 'Closed watcher')
   }
 }
 
 export const start = async (...dirs: string[]) => {
   await stop()
+
+  if (dirs.length === 0) {
+    logger.info(
+      'replay.service',
+      'No valid directories to watch, keeping watcher closed.'
+    )
+
+    return
+  }
 
   const paths = dirs.map((dir) => path.normalize(`${dir}/**/*.replay`))
 
@@ -53,11 +62,16 @@ export const start = async (...dirs: string[]) => {
     })
 
     watcher.on('error', (err) =>
-      logger.error('replay.watcher', `Error event fired`, err)
+      logger.error('replay.service', `Error event fired`, err)
     )
 
-    logger.info('replay.watcher', 'Watching for new replays...')
+    logger.info('replay.service', 'Watching for new replays...')
   } catch (err) {
-    logger.error('replay.watcher', 'Unknown error', err)
+    logger.error('replay.service', 'Unknown error', err)
   }
+}
+
+export default {
+  start,
+  stop,
 }

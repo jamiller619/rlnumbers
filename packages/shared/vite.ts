@@ -8,6 +8,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import rootPkgJSON from '../../package.json'
 import apiPkgJSON from '../api/package.json'
 import appPkgJSON from '../app/package.json'
+import sharedPkgJSON from '../shared/package.json'
 
 export const dirname = (importMetaUrl: string) => {
   return path.dirname(fileURLToPath(importMetaUrl))
@@ -76,7 +77,11 @@ export const getChromeVersion = () => {
 const here = dirname(import.meta.url)
 const root = path.join(here, '../../')
 
-const createConfig = (pkg: PackageJSON, app: string): UserConfig => {
+const createConfig = (
+  pkg: PackageJSON,
+  app: string,
+  mode: 'dev' | 'prod'
+): UserConfig => {
   return {
     root,
     plugins: [
@@ -84,9 +89,10 @@ const createConfig = (pkg: PackageJSON, app: string): UserConfig => {
         root,
       }),
     ],
+    mode: mode === 'prod' ? 'production' : 'development',
     build: {
       outDir: path.join(root, 'dist', app),
-      minify: process.env.NODE_ENV !== 'development',
+      minify: mode === 'prod',
       sourcemap: true,
       rollupOptions: {
         external: [
@@ -95,7 +101,8 @@ const createConfig = (pkg: PackageJSON, app: string): UserConfig => {
             rootPkgJSON.dependencies,
             pkg.devDependencies,
             pkg.dependencies,
-            apiPkgJSON.dependencies
+            apiPkgJSON.dependencies,
+            sharedPkgJSON.dependencies
           ),
           ...builtinModules,
         ],
@@ -105,7 +112,7 @@ const createConfig = (pkg: PackageJSON, app: string): UserConfig => {
 }
 
 export const merge = (config: UserConfig, pkg: PackageJSON, app = 'app') => {
-  const result = deepmerge(createConfig(pkg, app), config)
+  const result = deepmerge(createConfig(pkg, app, 'dev'), config)
 
   // console.info(`\nmerged config for ${app}:`)
   // console.info(JSON.stringify(result, null, 2))

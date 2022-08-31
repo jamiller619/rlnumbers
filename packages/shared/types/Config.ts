@@ -1,7 +1,7 @@
 import { ColorMode } from '~/enums'
 import DotNotation from '~/types/DotNotation'
 
-type DirConfig = {
+export type DirConfig = {
   path: string
   recursive: boolean
   watch: boolean
@@ -20,4 +20,7 @@ type Config = {
 
 export default Config
 
-export type ConfigKey = DotNotation<Config, string | string[] | ColorMode>
+export type ConfigKey = DotNotation<
+  Config,
+  string | string[] | ColorMode | DirConfig[]
+>

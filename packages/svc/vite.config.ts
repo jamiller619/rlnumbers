@@ -9,7 +9,7 @@ const config: UserConfig = {
     lib: {
       entry: 'index.ts',
       formats: ['es'],
-      fileName: () => 'index.js',
+      fileName: 'index',
     },
   },
 }

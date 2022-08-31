@@ -2,8 +2,6 @@ import process from 'node:process'
 import chalk from 'chalk'
 import { build } from 'vite'
 
-console.log(process.env.NODE_ENV)
-
 const buildMsg = (app: string) => {
   return `\n${chalk.dim('Building:')} ${chalk.bold.blueBright(app)}\n`
 }
@@ -13,7 +11,6 @@ const buildApp = async (app: string) => {
 
   await build({
     configFile: `packages/${app}/vite.config.ts`,
-    envDir: '../',
   })
 }
 

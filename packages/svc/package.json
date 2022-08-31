@@ -8,6 +8,7 @@
     "@types/node-windows": "^0.1.2"
   },
   "dependencies": {
+    "forever": "^4.0.3",
     "node-windows": "^1.0.0-beta.8",
     "readdirp": "^3.6.0",
     "wql-process-monitor": "^2.1.1"

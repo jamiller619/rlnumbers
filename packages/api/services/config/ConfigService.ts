@@ -26,9 +26,9 @@ export default class ConfigService extends TypedEmitter<ConfigServiceEvent> {
     )
   }
 
-  public get<T>(key: ConfigKey) {
+  public get<T>(key: ConfigKey): T {
     // @ts-ignore: This works...
-    return this.#store.get(key) as T
+    return this.#store.get(key)
   }
 
   public getConfig() {
