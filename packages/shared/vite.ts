@@ -75,7 +75,6 @@ export const getChromeVersion = () => {
 
 const here = dirname(import.meta.url)
 const root = path.join(here, '../../')
-// const root = __dirname
 
 const createConfig = (pkg: PackageJSON, app: string): UserConfig => {
   return {
@@ -87,8 +86,7 @@ const createConfig = (pkg: PackageJSON, app: string): UserConfig => {
     ],
     build: {
       outDir: path.join(root, 'dist', app),
-      minify: false,
-      // minify: process.env.NODE_ENV !== 'development',
+      minify: process.env.NODE_ENV !== 'development',
       sourcemap: true,
       rollupOptions: {
         external: [

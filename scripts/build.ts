@@ -2,20 +2,24 @@ import process from 'node:process'
 import chalk from 'chalk'
 import { build } from 'vite'
 
-const buildMsg = (app: string, isElectronApp = true) => {
-  return `\n${chalk.dim('Building:')} ${chalk.bold.blueBright(
-    `${isElectronApp ? 'electron' : ''} ${app}`
-  )}\n`
+console.log(process.env.NODE_ENV)
+
+const buildMsg = (app: string) => {
+  return `\n${chalk.dim('Building:')} ${chalk.bold.blueBright(app)}\n`
 }
 
 const buildApp = async (app: string) => {
-  console.log(buildMsg(app, true))
+  console.log(buildMsg(app))
+
   await build({
     configFile: `packages/${app}/vite.config.ts`,
+    envDir: '../',
   })
 }
 
-const apps = ['api', 'app/main', 'app/renderer', 'app/preload', 'svc']
+const electron = ['app/main', 'app/renderer', 'app/preload']
+
+const apps = ['svc', ...electron]
 
 for (const app of apps) {
   await buildApp(app)

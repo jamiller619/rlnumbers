@@ -54,8 +54,9 @@ const api = {
   },
 
   replays: {
-    getDefaultDirectory: (): Promise<string> =>
-      invoke('replays:getDefaultDirectory'),
+    getDefaultDirectory: (): Promise<string> => {
+      return invoke('replays:getDefaultDirectory')
+    },
     get: (
       page?: number,
       take?: number,

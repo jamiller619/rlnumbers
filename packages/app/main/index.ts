@@ -3,7 +3,13 @@ import { versions } from 'node:process'
 import { BrowserWindow, app, dialog, ipcMain } from 'electron'
 import logger from 'logger'
 import { ConfigService, ReplayService } from '@rln/api/services'
-import { ConfigKey, ReplayEntity, Sort } from '@rln/shared/types'
+import {
+  ConfigKey,
+  Progress,
+  Replay,
+  ReplayEntity,
+  Sort,
+} from '@rln/shared/types'
 import wait from '@rln/shared/utils/wait'
 import { isDev } from '~/config'
 import { themeService } from './themes'
@@ -92,18 +98,9 @@ const createWindow = () => {
   ipcMain.handle('window:minimize', () => mainWindow?.minimize())
   ipcMain.handle('window:unmaximize', () => mainWindow?.unmaximize())
 
-  // ipcMain.handle('replays:getDefaultDirectory', () => {
-  //   return replayService.getDefaultDirectory()
-  // })
-
-  // ipcMain.handle(
-  //   'replays:countDirectory',
-  //   async (_: unknown, ...dirs: string[]) => {
-  //     for await (const count of replayService.countReplayFiles(...dirs)) {
-  //       mainWindow?.webContents.send('replay:count', count)
-  //     }
-  //   }
-  // )
+  ipcMain.handle('replays:getDefaultDirectory', () => {
+    return replayService.getDefaultDirectory()
+  })
 
   ipcMain.handle('intl:get', async () => {
     const { intlService } = await import('~/intl')
@@ -111,25 +108,25 @@ const createWindow = () => {
     return intlService.getIntl()
   })
 
-  // replayService.on('replay:imported', (replay: Replay) => {
-  //   mainWindow?.webContents.send('replay:imported', replay)
-  // })
+  replayService.on('replay:imported', (replay: Replay) => {
+    mainWindow?.webContents.send('replay:imported', replay)
+  })
 
-  // replayService.on('replay:deleted', (id: number) => {
-  //   mainWindow?.webContents.send('replay:deleted', id)
-  // })
+  replayService.on('replay:deleted', (id: number) => {
+    mainWindow?.webContents.send('replay:deleted', id)
+  })
 
-  // replayService.on('import:start', (total: number) => {
-  //   mainWindow?.webContents.send('import:start', total)
-  // })
+  replayService.on('import:start', (total: number) => {
+    mainWindow?.webContents.send('import:start', total)
+  })
 
-  // replayService.on('import:progress', (progress: Progress) => {
-  //   mainWindow?.webContents.send('import:progress', progress)
-  // })
+  replayService.on('import:progress', (progress: Progress) => {
+    mainWindow?.webContents.send('import:progress', progress)
+  })
 
-  // replayService.on('import:complete', () => {
-  //   mainWindow?.webContents.send('import:complete')
-  // })
+  replayService.on('import:complete', () => {
+    mainWindow?.webContents.send('import:complete')
+  })
 
   mainWindow.on('closed', () => {
     logger.info('main', 'Main window closed')
