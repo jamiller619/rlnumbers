@@ -1,8 +1,8 @@
 import type { ExecOptions } from 'node:child_process'
 import jq from 'node-jq'
-import { RRRocket } from '@rln/shared/lib'
 import exec from '~/utils/exec'
 import { exe } from './loader'
+import * as RRRocket from './types'
 
 const batch = function* <T>(items: T[], size: number) {
   for (let i = 0; i < items.length; i += size) {
@@ -14,7 +14,7 @@ const opts: ExecOptions = {
   maxBuffer: 1024 * 1000,
 }
 
-export async function* parseReplays(
+export default async function* parser(
   withNetworkData = false,
   ...files: string[]
 ) {

@@ -1,17 +1,17 @@
 import { UserConfig } from 'vite'
-import pkg from '../app/package.json'
-import merge, { dirname, getNodeVersion } from '../shared/vite.config.js'
+import { dirname, getNodeVersion, merge } from '@rln/shared/vite'
+import pkg from './package.json'
 
 const config: UserConfig = {
   root: dirname(import.meta.url),
   build: {
-    target: getNodeVersion(pkg),
+    target: getNodeVersion(),
     lib: {
       entry: 'index.ts',
-      formats: ['cjs'],
-      fileName: () => 'index.cjs',
+      formats: ['es'],
+      fileName: () => 'index.js',
     },
   },
 }
 
-export default merge(config, pkg)
+export default merge(config, pkg, 'svc')

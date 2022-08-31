@@ -1,4 +1,4 @@
-import Colors from './Colors'
+import { Colors } from '~/types'
 
 type Step3 = 'small' | 'medium' | 'large'
 type Step5 = 'smaller' | Step3 | 'larger'

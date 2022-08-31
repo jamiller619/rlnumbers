@@ -1,11 +1,10 @@
 {
-  "extends": "../../../tsconfig.json",
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "paths": {
-      "~/*": ["./*"],
-      "@rln/shared/*": ["../../shared/*"]
+      "~/*": ["./*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", "**/*.d.ts", "../package.json"],
-  "exclude": ["vite.config.ts"]
+  "references": [{ "path": "../../shared" }],
+  "include": ["**/*.ts", "**/*.tsx", "**/*.d.ts", "../package.json"]
 }

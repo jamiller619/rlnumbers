@@ -1,5 +1,10 @@
+import process from 'node:process'
 import chalk from 'chalk'
 import { build } from 'vite'
+
+type Env = 'dev' | 'prod' | 'test'
+
+// const env = process.argv[2] as Env
 
 const buildMsg = (app: string, isElectronApp = true) => {
   return `\n${chalk.dim('Building:')} ${chalk.bold.blueBright(

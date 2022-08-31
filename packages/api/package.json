@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@prisma/client": "^3.14.0",
-    "electron-store": "^8.1.0"
+    "app-root-dir": "^1.0.2",
+    "electron-store": "^8.1.0",
+    "node-jq": "^2.3.3"
   }
 }

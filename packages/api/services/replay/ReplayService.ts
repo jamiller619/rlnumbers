@@ -1,5 +1,4 @@
-import { RRRocket } from '@rln/shared/lib'
-import logger from '@rln/shared/logger'
+import logger from 'logger'
 import {
   Paged,
   Player,
@@ -9,6 +8,7 @@ import {
   ReplayEntity,
   Sort,
 } from '@rln/shared/types'
+import { RRRocket } from '~/rrrocket'
 import { PlayerService } from '~/services'
 import BaseService from '~/services/BaseService'
 import ReplayParser from './ReplayParser'
@@ -30,7 +30,7 @@ export default class ReplayService extends BaseService<ReplayServiceEvent> {
    * player stats. No players are deleted.
    * @param filePath Path to the replay file.
    */
-  async delete(filePath: string) {
+  public async delete(filePath: string) {
     try {
       const [_, deletedReplay] = await this.client.$transaction([
         this.client.stats.deleteMany({
@@ -54,7 +54,7 @@ export default class ReplayService extends BaseService<ReplayServiceEvent> {
     }
   }
 
-  async get(
+  public async get(
     page = 0,
     take = 30,
     sort: Sort<ReplayEntity> = {
@@ -99,13 +99,89 @@ export default class ReplayService extends BaseService<ReplayServiceEvent> {
    * OS and platform.
    * @returns The default path set by the game for replays.
    */
-  async getDefaultDirectory() {
+  public async getDefaultDirectory() {
     const { platform, homedir } = await import('node:os')
     const { normalize } = await import('node:path')
 
     const dir = directoryMap[platform()]
 
     return normalize(dir.replace('%HOME%', homedir()))
+  }
+
+  public async importReplays(...files: string[]) {
+    const { parser } = await import('~/rrrocket')
+    const filesTotal = files.length
+
+    if (filesTotal > 1) {
+      logger.info('replay.import', `Processing ${filesTotal} replays...`)
+    }
+
+    const filtered = await this.#filterReplays(...files)
+    const toImportTotal = filtered.length
+
+    if (toImportTotal < 1) {
+      logger.info('replay.import', 'No new replays to import.')
+
+      return
+    }
+
+    this.emit('import:start', filesTotal)
+
+    logger.info(
+      'replay.import',
+      `Found ${toImportTotal} replay(s) to import...`
+    )
+
+    let progress = filesTotal - toImportTotal + 1
+
+    for await (const parsedBatch of parser(false, ...filtered)) {
+      for await (const { file, data } of parsedBatch) {
+        const progressEvent: Progress = {
+          progress,
+          total: filesTotal,
+          message: `Importing "${file}"`,
+          status: 'success',
+        }
+
+        try {
+          const replay = await this.#import(file, data)
+
+          this.emit('replay:imported', replay)
+
+          logger.debug(
+            'replay.import',
+            `(${progress}/${toImportTotal}) Imported "${file}"`
+          )
+        } catch (err) {
+          logger.error('replay.import', `Unable to import "${file}"`, err)
+          progressEvent.message = `Error importing "${file}"`
+        } finally {
+          progress += 1
+          progressEvent.progress = progress
+
+          this.emit('import:progress', progressEvent)
+        }
+      }
+    }
+
+    this.emit('import:complete')
+  }
+
+  /**
+   * Filters out replays already saved in the database.
+   * @param files Replay file paths.
+   * @returns Replay files that haven't already been imported.
+   */
+  async #filterReplays(...files: string[]) {
+    const replays = (
+      await this.client.replay.findMany({
+        select: {
+          path: true,
+        },
+      })
+    ).map((replay) => replay.path)
+
+    return files.filter((f) => !replays.includes(f))
   }
 
   async #handleOwner(
@@ -162,81 +238,5 @@ export default class ReplayService extends BaseService<ReplayServiceEvent> {
       ...(await this.#handleOwner(savedReplay, players, owner)),
       stats: savedStats,
     }
-  }
-
-  /**
-   * Filters out replays already saved in the database.
-   * @param files Replay file paths.
-   * @returns Replay files that haven't already been imported.
-   */
-  async #filterReplays(...files: string[]) {
-    const replays = (
-      await this.client.replay.findMany({
-        select: {
-          path: true,
-        },
-      })
-    ).map((replay) => replay.path)
-
-    return files.filter((f) => !replays.includes(f))
-  }
-
-  async importReplays(...files: string[]) {
-    const { rrrocketParser: parser } = await import('@rln/shared/lib/rrrocket')
-    const filesTotal = files.length
-
-    if (filesTotal > 1) {
-      logger.info('replay.import', `Processing ${filesTotal} replays...`)
-    }
-
-    const filtered = await this.#filterReplays(...files)
-    const toImportTotal = filtered.length
-
-    if (toImportTotal < 1) {
-      logger.info('replay.import', 'No new replays to import.')
-
-      return
-    }
-
-    this.emit('import:start', filesTotal)
-
-    logger.info(
-      'replay.import',
-      `Found ${toImportTotal} replay(s) to import...`
-    )
-
-    let progress = filesTotal - toImportTotal + 1
-
-    for await (const parsedBatch of parser(false, ...filtered)) {
-      for await (const { file, data } of parsedBatch) {
-        const progressEvent: Progress = {
-          progress,
-          total: filesTotal,
-          message: `Importing "${file}"`,
-          status: 'success',
-        }
-
-        try {
-          const replay = await this.#import(file, data)
-
-          this.emit('replay:imported', replay)
-
-          logger.debug(
-            'replay.import',
-            `(${progress}/${toImportTotal}) Imported "${file}"`
-          )
-        } catch (err) {
-          logger.error('replay.import', `Unable to import "${file}"`, err)
-          progressEvent.message = `Error importing "${file}"`
-        } finally {
-          progress += 1
-          progressEvent.progress = progress
-
-          this.emit('import:progress', progressEvent)
-        }
-      }
-    }
-
-    this.emit('import:complete')
   }
 }

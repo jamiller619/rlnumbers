@@ -1,11 +1,12 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { osLocale } from 'os-locale'
-import logger from '@rln/shared/logger'
+import logger from 'logger'
+import osLocale from 'os-locale'
 import { Intl } from '@rln/shared/types'
+import { distRoot } from '~/config'
 
 let intl: Intl | null = null
-const root = path.resolve('./dist/locales')
+const root = path.resolve(distRoot, 'locales')
 
 const getLocaleJSON = async (locale: string): Promise<Intl> => {
   try {

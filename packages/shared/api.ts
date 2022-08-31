@@ -1,6 +1,13 @@
 import { ipcRenderer } from 'electron'
-import { ConfigKey, Theme } from './types'
-import { Intl, Paged, Replay, ReplayEntity, Sort } from './types'
+import {
+  ConfigKey,
+  Intl,
+  Paged,
+  Replay,
+  ReplayEntity,
+  Sort,
+  Theme,
+} from './types'
 
 const { invoke } = ipcRenderer
 

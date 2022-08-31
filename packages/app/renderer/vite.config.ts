@@ -1,15 +1,14 @@
 import react from '@vitejs/plugin-react'
 import { UserConfig } from 'vite'
-import merge, { dirname, getChromeVersion } from '../../shared/vite.config.js'
+import { dirname, getChromeVersion, merge } from '@rln/shared/vite.js'
 import pkg from '../package.json'
 
 const config: UserConfig = {
   root: dirname(import.meta.url),
   plugins: [react()],
   build: {
-    target: getChromeVersion(pkg),
-    polyfillModulePreload: false,
+    target: getChromeVersion(),
   },
 }
 
-export default merge(config, pkg)
+export default merge(config, pkg, 'app')

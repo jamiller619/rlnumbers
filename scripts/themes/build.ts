@@ -17,7 +17,7 @@ const src = path.resolve(
   process.cwd(),
   'packages/app/renderer/style/themes/system'
 )
-const dest = path.resolve(process.cwd(), 'dist/app/theme')
+const dest = path.resolve(process.cwd(), 'dist/app/theme/system')
 
 await fs.mkdir(src, { recursive: true })
 await fs.mkdir(dest, { recursive: true })

@@ -1,10 +1,12 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import logger from '@rln/shared/logger'
+import logger from 'logger'
+import { ConfigService } from '@rln/api/services'
 import { Theme } from '@rln/shared/types'
-import { configService } from '~/config'
+import { distRoot } from '~/config'
 
-const root = path.resolve('dist/themes')
+const root = path.join(distRoot, 'theme')
+const configService = new ConfigService()
 
 export const get = async () => {
   const themeName = configService.get<string>('theme.name')

@@ -1,16 +1,17 @@
 import { builtinModules } from 'node:module'
-import path, { dirname as ndirname } from 'node:path'
-import process from 'node:process'
+import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { externalize } from 'build-tools/vite'
 import deepmerge from 'deepmerge'
 import { UserConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
+import rootPkgJSON from '../../package.json'
+import apiPkgJSON from '../api/package.json'
+import appPkgJSON from '../app/package.json'
 
-export const dirname = (importMetaUrl: string) =>
-  ndirname(fileURLToPath(importMetaUrl))
-
-// Allow importing node modules with the "node" prefix, i.e. "import path from 'node:path'".
-const nodePrefixedModules = builtinModules.map((name) => `node:${name}`)
+export const dirname = (importMetaUrl: string) => {
+  return path.dirname(fileURLToPath(importMetaUrl))
+}
 
 type PackageJSON = {
   [key: string]: unknown
@@ -48,12 +49,12 @@ const chromeVersionMap: Record<string, string> = {
   '11': '87',
 }
 
-const getElectronVersion = (pkg: PackageJSON) => {
-  return pkg.dependencies['electron'].replace('^', '').split('.')[0]
+const getElectronVersion = () => {
+  return appPkgJSON.dependencies['electron'].replace('^', '').split('.')[0]
 }
 
-export const getNodeVersion = (pkg: PackageJSON) => {
-  const electronVer = getElectronVersion(pkg)
+export const getNodeVersion = () => {
+  const electronVer = getElectronVersion()
 
   if (electronVer != null) {
     return `node${nodeVersionMap[electronVer]}`
@@ -62,8 +63,8 @@ export const getNodeVersion = (pkg: PackageJSON) => {
   return ''
 }
 
-export const getChromeVersion = (pkg: PackageJSON) => {
-  const electronVer = getElectronVersion(pkg)
+export const getChromeVersion = () => {
+  const electronVer = getElectronVersion()
 
   if (electronVer != null) {
     return `chrome${chromeVersionMap[electronVer]}`
@@ -74,31 +75,42 @@ export const getChromeVersion = (pkg: PackageJSON) => {
 
 const here = dirname(import.meta.url)
 const root = path.join(here, '../../')
+// const root = __dirname
 
-const createConfig = (pkg: PackageJSON): UserConfig => {
+const createConfig = (pkg: PackageJSON, app: string): UserConfig => {
   return {
     root,
     plugins: [
       tsconfigPaths({
-        root: './',
+        root,
       }),
     ],
     build: {
-      outDir: path.join(root, 'dist/app'),
-      minify: process.env.NODE_ENV !== 'development',
+      outDir: path.join(root, 'dist', app),
+      minify: false,
+      // minify: process.env.NODE_ENV !== 'development',
       sourcemap: true,
       rollupOptions: {
         external: [
-          ...nodePrefixedModules,
+          ...externalize(
+            rootPkgJSON.devDependencies,
+            rootPkgJSON.dependencies,
+            pkg.devDependencies,
+            pkg.dependencies,
+            apiPkgJSON.dependencies
+          ),
           ...builtinModules,
-          ...Object.keys(pkg.devDependencies || {}),
-          ...Object.keys(pkg.dependencies || {}),
         ],
       },
     },
   }
 }
 
-export default function merge(config: UserConfig, pkg: PackageJSON) {
-  return deepmerge(createConfig(pkg), config)
+export const merge = (config: UserConfig, pkg: PackageJSON, app = 'app') => {
+  const result = deepmerge(createConfig(pkg, app), config)
+
+  console.info(`\nmerged config for ${app}:`)
+  console.info(JSON.stringify(result, null, 2))
+
+  return result
 }

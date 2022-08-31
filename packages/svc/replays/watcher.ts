@@ -1,15 +1,15 @@
 import path from 'node:path'
 import type { FSWatcher } from 'chokidar'
 import * as chokidar from 'chokidar'
+import logger from 'logger'
 import { ImportQueueService } from '@rln/api/services'
-import logger from '@rln/shared/logger'
 import getReplayFiles from './getReplayFiles'
 import isReplay from './isReplay'
 
 let watcher: FSWatcher | null = null
 const importQueueService = new ImportQueueService()
 
-const stop = async () => {
+export const stop = async () => {
   if (watcher) {
     logger.info('replay.watcher', 'Closing watcher...')
 
@@ -20,7 +20,7 @@ const stop = async () => {
   }
 }
 
-export default async function watch(...dirs: string[]) {
+export const start = async (...dirs: string[]) => {
   await stop()
 
   const paths = dirs.map((dir) => path.normalize(`${dir}/**/*.replay`))

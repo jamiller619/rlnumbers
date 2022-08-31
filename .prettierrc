@@ -3,6 +3,8 @@
   "useTabs": false,
   "semi": false,
   "singleQuote": true,
+  "bracketSameLine": true,
+  "editorconfig": true,
   "importOrder": [
     "^node:(.*)$",
     "<THIRD_PARTY_MODULES>",

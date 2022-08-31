@@ -1,6 +1,5 @@
 import { Replay as ReplayEntity } from '@prisma/client'
-import { PlayerDTO } from './Player'
-import Stats, { StatsDTO } from './Stats'
+import { PlayerDTO, Stats, StatsDTO } from '~/types'
 
 type Replay = Readonly<ReplayEntity> & {
   readonly stats: Stats[]

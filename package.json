@@ -4,6 +4,7 @@
   "license": "MIT",
   "type": "module",
   "private": true,
+  "main": "dist/app/index.cjs",
   "workspaces": [
     "packages/*"
   ],
@@ -13,16 +14,16 @@
     "testEnvironment": "node"
   },
   "scripts": {
-    "dx": "yarn clean && yarn copy && NODE_ENV=development node --loader ts-node/esm scripts/watch.ts",
+    "dx": "yarn clean && yarn copy && node -r dotenv/config --experimental-json-modules --loader ts-node/esm scripts/watch.ts",
     "test": "jest",
-    "build": "yarn clean && yarn copy && yarn build:theme && DEBUG=vite-tsconfig-paths node --loader ts-node/esm --experimental-json-modules scripts/build.ts",
-    "build:theme": "node --loader ts-node/esm --experimental-json-modules scripts/themes/build.ts",
-    "clean": "rimraf dist/{*.cjs,*.map,*.html,assets}",
-    "copy": "run-p copy:*",
-    "copy:rrrocket": "node --loader ts-node/esm scripts/copy.ts ./packages/api/lib/rrrocket/bin ./dist/app/bin",
-    "copy:intl": "node --loader ts-node/esm scripts/copy.ts ./packages/app/main/intl/locales ./dist/app/locales",
+    "build": "yarn clean && yarn copy && yarn build:theme && node -r dotenv/config --loader ts-node/esm --experimental-json-modules scripts/build.ts",
+    "build:theme": "node -r dotenv/config --loader ts-node/esm --experimental-json-modules scripts/themes/build.ts",
+    "clean": "rimraf dist",
+    "copy": "run-s copy:*",
+    "copy:rrrocket": "bt-copy ./packages/api/rrrocket/bin ./dist/app/bin",
+    "copy:intl": "bt-copy ./packages/app/main/intl/locales ./dist/app/locales",
     "db": "run-s db:*",
-    "db:clean": "rimraf ./packages/shared/db/rlnumbers.db",
+    "db-new": "rimraf ./packages/api/db/rlnumbers.db",
     "db:gen": "yarn prisma generate --schema=./packages/api/db/schema.prisma",
     "db:push": "yarn prisma db push --schema=./packages/api/db/schema.prisma"
   },
@@ -34,7 +35,7 @@
     "@types/recursive-readdir": "^2.2.1",
     "@typescript-eslint/eslint-plugin": "^5.13.0",
     "@typescript-eslint/parser": "^5.13.0",
-    "chalk": "^5.0.1",
+    "build-tools": "file:../build-tools",
     "chokidar": "^3.5.3",
     "deepmerge": "^4.2.2",
     "eslint": "^8.10.0",
@@ -47,8 +48,14 @@
     "rimraf": "^3.0.2",
     "ts-jest": "^28.0.7",
     "ts-node": "^10.7.0",
+    "tslib": "^2.4.0",
     "typescript": "^4.6.2",
     "vite": "^3.0.2",
     "vite-tsconfig-paths": "^3.4.1"
+  },
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "dotenv": "^16.0.2",
+    "logger": "file:../logger"
   }
 }

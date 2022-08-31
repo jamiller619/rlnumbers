@@ -1,10 +1,9 @@
-import { ChildProcess, spawn } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import { AddressInfo } from 'node:net'
-import os from 'node:os'
+import { platform } from 'node:os'
 import electron from 'electron'
 import { build, createServer } from 'vite'
-
-let electronProcess: ChildProcess | null = null
+import { restart } from 'vite-tools'
 
 const server = await createServer({
   configFile: 'packages/app/renderer/vite.config.ts',
@@ -16,17 +15,6 @@ const env = Object.assign(process.env, {
   DEV_SERVER_PORT: (server.httpServer?.address() as AddressInfo).port,
 })
 
-const restartElectron = {
-  name: 'electron-main-watcher',
-  writeBundle() {
-    electronProcess && electronProcess.kill()
-    electronProcess = spawn(electron as unknown as string, ['.'], {
-      stdio: 'inherit',
-      env,
-    })
-  },
-}
-
 const opts = {
   mode: 'development',
   build: {
@@ -37,7 +25,11 @@ const opts = {
 await build({
   ...opts,
   configFile: 'packages/app/main/vite.config.ts',
-  plugins: [restartElectron],
+  plugins: [
+    restart(electron as unknown as string, ['.'], {
+      env,
+    }),
+  ],
 })
 
 await build({
@@ -45,8 +37,8 @@ await build({
   configFile: 'packages/app/preload/vite.config.ts',
 })
 
-const cmd = os.platform() === 'win32' ? 'yarn.cmd' : 'yarn'
+const cmd = platform() === 'win32' ? 'yarn.cmd' : 'yarn'
 
-spawn(cmd, ['theme:build', '--watch'], {
+spawn(cmd, ['build:theme', '--watch'], {
   stdio: 'inherit',
 })

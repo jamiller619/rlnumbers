@@ -1,5 +1,5 @@
 import { Stats as StatsEntity } from '@prisma/client'
-import Player, { PlayerDTO } from './Player'
+import { Player, PlayerDTO } from '~/types'
 
 type Stats = Readonly<StatsEntity> & {
   readonly player: Player

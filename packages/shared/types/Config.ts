@@ -1,5 +1,5 @@
-import { ColorMode } from '../enums'
-import DotNotation from '../utils/DotNotation'
+import { ColorMode } from '~/enums'
+import DotNotation from '~/types/DotNotation'
 
 type DirConfig = {
   path: string

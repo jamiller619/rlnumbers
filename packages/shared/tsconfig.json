@@ -1,10 +1,15 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "composite": true,
     "paths": {
       "~/*": ["./*"]
     }
   },
-  "include": ["**/*.ts"],
-  "exclude": ["vite.config.ts"]
+  "include": [
+    "**/*.ts",
+    "../../package.json",
+    "../app/package.json",
+    "../api/package.json"
+  ]
 }

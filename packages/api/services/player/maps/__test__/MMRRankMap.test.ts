@@ -1,5 +1,5 @@
-import { Playlist, Rank } from '~/enums'
-import { MMRRankMap } from '~/maps'
+import { Playlist, Rank } from '@rln/shared/enums'
+import MMRRankMap from '../MMRRankMap'
 
 describe('MMR Rank Map', () => {
   it('should return Silver, Div 1 for 282 MMR in Duel', () => {

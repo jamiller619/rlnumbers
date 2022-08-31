@@ -1,7 +1,7 @@
 import EventEmitter from 'node:events'
 import Store from 'electron-store'
+import logger from 'logger'
 import TypedEmitter from 'typed-emitter'
-import logger from '@rln/shared/logger'
 import type { Config, ConfigKey } from '@rln/shared/types'
 import defaultConfig from './default.json'
 
