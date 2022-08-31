@@ -3,5 +3,9 @@
   "version": "1.0.0",
   "license": "MIT",
   "type": "module",
-  "private": true
+  "private": true,
+  "dependencies": {},
+  "devDependencies": {
+    "typed-emitter": "^2.1.0"
+  }
 }

@@ -5,8 +5,7 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "prisma": "^3.14.0",
-    "typed-emitter": "^2.1.0"
+    "prisma": "^3.14.0"
   },
   "dependencies": {
     "@prisma/client": "^3.14.0",

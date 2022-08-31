@@ -1,15 +1,14 @@
-import EventEmitter from 'node:events'
 import Store from 'electron-store'
 import logger from 'logger'
-import TypedEmitter from 'typed-emitter'
 import type { Config, ConfigKey } from '@rln/shared/types'
+import { TypedEmitter } from '@rln/shared/types'
 import defaultConfig from './default.json'
 
-export type ConfigServiceEvent = {
+type ConfigServiceEvent = {
   change: (config: Config) => void
 }
 
-export default class ConfigService extends (EventEmitter as new () => TypedEmitter<ConfigServiceEvent>) {
+export default class ConfigService extends TypedEmitter<ConfigServiceEvent> {
   #store: Store<Config>
 
   constructor() {
@@ -27,16 +26,16 @@ export default class ConfigService extends (EventEmitter as new () => TypedEmitt
     )
   }
 
-  getConfig() {
-    return { ...this.#store.store }
-  }
-
-  get<T>(key: ConfigKey) {
+  public get<T>(key: ConfigKey) {
     // @ts-ignore: This works...
     return this.#store.get(key) as T
   }
 
-  set<T>(key: ConfigKey, value: T) {
+  public getConfig() {
+    return { ...this.#store.store }
+  }
+
+  public set<T>(key: ConfigKey, value: T) {
     try {
       this.#store.set(key, value)
 

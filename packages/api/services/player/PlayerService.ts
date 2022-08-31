@@ -2,7 +2,7 @@ import { PlayerDTO, StatsDTO } from '@rln/shared/types'
 import BaseService from '~/services/BaseService'
 
 export default class PlayerService extends BaseService {
-  findByOnlineId(onlineId: string) {
+  public findByOnlineId(onlineId: string) {
     return this.client.player.findFirst({
       where: {
         onlineId,
@@ -10,7 +10,7 @@ export default class PlayerService extends BaseService {
     })
   }
 
-  upsert(data: PlayerDTO) {
+  public upsert(data: PlayerDTO) {
     return data.onlineId == null
       ? this.client.player.create({
           data: {
@@ -32,7 +32,7 @@ export default class PlayerService extends BaseService {
         })
   }
 
-  async save(player: PlayerDTO) {
+  public async save(player: PlayerDTO) {
     if (player.onlineId != null) {
       const existing = await this.findByOnlineId(player.onlineId)
 
@@ -47,7 +47,7 @@ export default class PlayerService extends BaseService {
     return this.upsert(player)
   }
 
-  saveStats(replayId: number, stats: StatsDTO[]) {
+  public saveStats(replayId: number, stats: StatsDTO[]) {
     return Promise.all(
       stats.map(async ({ player, ...playerStats }) => {
         const savedPlayer = await this.save(player)

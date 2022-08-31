@@ -1,16 +1,16 @@
 import BaseService from '~/services/BaseService'
 
-export type ImportQueueServiceEvent = {
+type ImportQueueServiceEvent = {
   ['replay:add']: (...files: string[]) => void
   ['replay:remove']: (...files: string[]) => void
 }
 
-export default class ImportQueueService extends BaseService<ImportQueueService> {
-  get() {
+export default class ImportQueueService extends BaseService<ImportQueueServiceEvent> {
+  public get() {
     return this.client.importQueue.findMany()
   }
 
-  async remove(...files: string[]) {
+  public async remove(...files: string[]) {
     await this.client.$transaction(
       files.map((path) =>
         this.client.importQueue.delete({
@@ -24,7 +24,7 @@ export default class ImportQueueService extends BaseService<ImportQueueService> 
     this.emit('replay:remove', ...files)
   }
 
-  async add(...files: string[]) {
+  public async add(...files: string[]) {
     const createdAt = new Date()
     const current = await this.get()
     const filtered = files.filter((file) =>

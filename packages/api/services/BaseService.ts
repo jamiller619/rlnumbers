@@ -1,11 +1,10 @@
-import EventEmitter from 'node:events'
 import { PrismaClient } from '@prisma/client'
-import TypedEmitter, { EventMap } from 'typed-emitter'
+import { TypedEmitter, TypedEventMap } from '@rln/shared/types'
 import { connect } from '~/db'
 
-export default class BaseService<T = unknown> extends (EventEmitter as {
-  new <T>(): TypedEmitter<T & EventMap>
-})<T> {
+export default abstract class BaseService<
+  T extends TypedEventMap = Record<string, never>
+> extends TypedEmitter<T> {
   client: PrismaClient
 
   constructor() {
