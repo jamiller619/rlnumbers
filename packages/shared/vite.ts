@@ -109,8 +109,8 @@ const createConfig = (pkg: PackageJSON, app: string): UserConfig => {
 export const merge = (config: UserConfig, pkg: PackageJSON, app = 'app') => {
   const result = deepmerge(createConfig(pkg, app), config)
 
-  console.info(`\nmerged config for ${app}:`)
-  console.info(JSON.stringify(result, null, 2))
+  // console.info(`\nmerged config for ${app}:`)
+  // console.info(JSON.stringify(result, null, 2))
 
   return result
 }

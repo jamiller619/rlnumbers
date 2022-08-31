@@ -1,5 +1,5 @@
 import { UserConfig } from 'vite'
-import { dirname, getNodeVersion, merge } from '@rln/shared/vite'
+import { dirname, getNodeVersion, merge } from '@rln/shared/vite.js'
 import pkg from './package.json'
 
 const config: UserConfig = {
