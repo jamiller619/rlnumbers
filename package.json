@@ -4,7 +4,6 @@
   "license": "MIT",
   "type": "module",
   "private": true,
-  "main": "dist/app/index.cjs",
   "workspaces": [
     "packages/*"
   ],
@@ -14,10 +13,9 @@
     "testEnvironment": "node"
   },
   "scripts": {
-    "dev": "yarn clean && yarn env && node -r dotenv/config --experimental-json-modules --loader ts-node/esm",
+    "dev": "yarn clean && node -r dotenv/config --experimental-json-modules --loader ts-node/esm",
     "dx": "yarn copy && yarn dev scripts/watch.app.ts",
     "dx:svc": "yarn dev scripts/watch.svc.ts",
-    "env": "cross-env NODE_ENV=development TS_NODE_PROJECT=tsconfig.base.json",
     "test": "jest",
     "build": "yarn clean && yarn copy && yarn build:theme && node -r dotenv/config --loader ts-node/esm --experimental-json-modules scripts/build.ts",
     "build:theme": "node -r dotenv/config --loader ts-node/esm --experimental-json-modules scripts/themes/build.ts",
@@ -40,7 +38,6 @@
     "@typescript-eslint/parser": "^5.13.0",
     "build-tools": "file:../build-tools",
     "chokidar": "^3.5.3",
-    "cross-env": "^7.0.3",
     "deepmerge": "^4.2.2",
     "eslint": "^8.10.0",
     "eslint-config-prettier": "^8.5.0",

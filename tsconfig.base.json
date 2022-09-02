@@ -1,24 +1,30 @@
 {
   "compilerOptions": {
+    "composite": true,
+
     "rootDir": ".",
     "target": "es2022",
     "module": "es2022",
-    "lib": ["es2021", "DOM"],
-    "esModuleInterop": true,
-    "strict": true,
-    "skipLibCheck": true,
     "moduleResolution": "Node",
+    "esModuleInterop": true,
     "resolveJsonModule": true,
-    "jsx": "preserve",
-    "noErrorTruncation": true,
+
+    "lib": ["es2021", "DOM"],
+    "skipLibCheck": true,
+
     "declaration": true,
     "incremental": true,
     "importHelpers": true,
-    "composite": true,
+    "jsx": "preserve",
+    "newLine": "lf",
+    "noErrorTruncation": true,
+
+    "strict": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+
     "paths": {
       "@rln/*": ["./packages/*"]
     }
-  },
-  "exclude": ["node_modules"],
-  "include": ["**/*.ts"]
+  }
 }

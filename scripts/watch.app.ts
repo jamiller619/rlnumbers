@@ -26,7 +26,7 @@ await build({
   ...opts,
   configFile: 'packages/app/main/vite.config.ts',
   plugins: [
-    restart(electron as unknown as string, ['.'], {
+    restart(electron as unknown as string, ['packages/app'], {
       env,
     }),
   ],
